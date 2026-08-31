@@ -1,10 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>PSC Markets Login</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
+    <div class="login-container">
+        <h1>PSC MARKETS</h1>
+        <p>Stock Trading Simulator</p>
+
+        <form method="POST" action="/login">
+
+            <label for="username">Username</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter username"
+                required
+            >
+
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter password"
+                required
+            >
+
+            <button type="submit">Login</button>
+
+        </form>
+    </div>
+
 </body>
+
 </html>
