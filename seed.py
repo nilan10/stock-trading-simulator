@@ -15,9 +15,9 @@ def seed_database():
 
         # 1. SEED DEFAULT USERS 
         if User.query.count() == 0:
-            admin = User(username='admin', password_hash='admin123', role='Admin', cash_balance=1000.0)
-            regulator = User(username='regulator', password_hash='reg123', role='Regulator', cash_balance=1000.0)
-            trader = User(username='trader1', password_hash='pass123', role='Trader', cash_balance=1000.0)
+            admin = User(username='admin', password='admin123', role='Admin', cash_balance=1000.0)
+            regulator = User(username='regulator', password='reg123', role='Regulator', cash_balance=1000.0)
+            trader = User(username='trader1', password='pass123', role='Trader', cash_balance=1000.0)
             
             db.session.add_all([admin, regulator, trader])
             db.session.commit()

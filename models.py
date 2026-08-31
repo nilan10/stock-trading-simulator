@@ -8,9 +8,9 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    password_hash = db.Column(db.String(255), nullable=False)
+    password = db.Column(db.String(50), nullable=False)  # Plain text password
     role = db.Column(db.String(20), default='Trader')  # Trader, Regulator, Admin
-    cash_balance = db.Column(db.Float, default=1000.0) # Everyone starts with $1,000
+    cash_balance = db.Column(db.Float, default=1000.0)
 
 # 2. STOCK MODEL
 class Stock(db.Model):
