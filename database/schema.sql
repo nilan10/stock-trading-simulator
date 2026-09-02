@@ -12,7 +12,8 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('Trader', 'Regulator', 'Admin') NOT NULL DEFAULT 'Trader',
-    cash_balance DECIMAL(12,2) NOT NULL DEFAULT 1000.00
+    cash_balance DECIMAL(12,2) NOT NULL DEFAULT 1000.00,
+    reserved_cash DECIMAL(12,2) NOT NULL DEFAULT 0.00
 );
 
 
@@ -31,6 +32,21 @@ CREATE TABLE stocks (
 
 
 -- =========================
+-- STOCK PRICE HISTORY
+-- =========================
+
+CREATE TABLE stock_price_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    stock_id INT NOT NULL,
+    price DECIMAL(12,2) NOT NULL,
+    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_price_history_stock
+        FOREIGN KEY (stock_id) REFERENCES stocks(id)
+);
+
+
+-- =========================
 -- PORTFOLIOS
 -- =========================
 
@@ -39,6 +55,7 @@ CREATE TABLE portfolios (
     user_id INT NOT NULL,
     stock_id INT NOT NULL,
     quantity INT NOT NULL DEFAULT 0,
+    reserved_quantity INT NOT NULL DEFAULT 0,
     avg_buy_price DECIMAL(12,2) NOT NULL DEFAULT 0.00,
 
     CONSTRAINT fk_portfolio_user
@@ -65,12 +82,18 @@ CREATE TABLE orders (
     price DECIMAL(12,2) NOT NULL,
     status ENUM('OPEN', 'EXECUTED', 'CANCELLED') NOT NULL DEFAULT 'OPEN',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    accepted_by_user_id INT NULL,
+    accepted_at DATETIME NULL,
+    executed_at DATETIME NULL,
 
     CONSTRAINT fk_order_user
         FOREIGN KEY (user_id) REFERENCES users(id),
 
     CONSTRAINT fk_order_stock
-        FOREIGN KEY (stock_id) REFERENCES stocks(id)
+        FOREIGN KEY (stock_id) REFERENCES stocks(id),
+
+    CONSTRAINT fk_order_accepted_by
+        FOREIGN KEY (accepted_by_user_id) REFERENCES users(id)
 );
 
 

@@ -5,8 +5,12 @@ from controllers.auth_controller import auth_controller
 from controllers.stock_controller import stock_controller
 from controllers.frontend_controller import frontend_controller
 from controllers.admin_controller import admin_bp
+from controllers.order_controller import order_controller
+from controllers.portfolio_controller import portfolio_controller
 
 app = Flask(__name__)
+
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"mysql+mysqlconnector://{os.getenv('DB_USER')}:"
@@ -23,6 +27,8 @@ app.register_blueprint(auth_controller)
 app.register_blueprint(stock_controller)
 app.register_blueprint(frontend_controller)
 app.register_blueprint(admin_bp)
+app.register_blueprint(order_controller)
+app.register_blueprint(portfolio_controller)
 
 
 @app.route("/")
