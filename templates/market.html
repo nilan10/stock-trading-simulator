@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Market Data</title>
+</head>
+
+<body>
+
+    <h1>Stock Market</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Ticker</th>
+                <th>Company</th>
+                <th>Current Price</th>
+                <th>Total Supply</th>
+                <th>Available Supply</th>
+            </tr>
+        </thead>
+
+        <tbody id="stockTable">
+        </tbody>
+    </table>
+
+
+    <script>
+
+        // Get stock data from the Flask API
+        async function loadStocks() {
+
+            const response = await fetch("/stocks");
+
+            const stocks = await response.json();
+
+            const table = document.getElementById("stockTable");
+
+            for (const stock of stocks) {
+
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td>${stock.ticker}</td>
+                    <td>${stock.company_name}</td>
+                    <td>$${stock.current_price}</td>
+                    <td>${stock.total_supply}</td>
+                    <td>${stock.available_supply}</td>
+                `;
+
+                table.appendChild(row);
+            }
+        }
+
+        // Load stocks when the page opens
+        loadStocks();
+
+    </script>
+
+</body>
+</html>
