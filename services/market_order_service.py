@@ -27,8 +27,10 @@ def buy_stock(ticker, quantity):
 
     total_cost = stock.current_price * quantity
 
-    if user.cash_balance < total_cost:
-        return False, "Insufficient funds."
+    available_cash = user.cash_balance - user.reserved_cash
+
+    if available_cash < total_cost:
+        return False, "Insufficient available funds."
 
     portfolio = Portfolio.query.filter_by(
         user_id=user.id,
@@ -40,6 +42,7 @@ def buy_stock(ticker, quantity):
         old_value = portfolio.avg_buy_price * old_quantity
 
         portfolio.quantity += quantity
+
         portfolio.avg_buy_price = (
             old_value + total_cost
         ) / portfolio.quantity
@@ -51,6 +54,7 @@ def buy_stock(ticker, quantity):
             quantity=quantity,
             avg_buy_price=stock.current_price
         )
+
         db.session.add(portfolio)
 
     user.cash_balance -= total_cost
@@ -96,8 +100,15 @@ def sell_stock(ticker, quantity):
         stock_id=stock.id
     ).first()
 
-    if not portfolio or portfolio.quantity < quantity:
+    if not portfolio:
         return False, "You do not own enough shares."
+
+    available_quantity = (
+        portfolio.quantity - portfolio.reserved_quantity
+    )
+
+    if available_quantity < quantity:
+        return False, "You do not have enough unreserved shares."
 
     total_value = stock.current_price * quantity
 
