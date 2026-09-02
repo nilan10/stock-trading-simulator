@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<html> <head> <title>Stock Trading Simulator</title> </head>
+
+<body>
+
+<h1>Stock Trading Simulator</h1>
+
+
+<!-- LOGIN -->
+<h2>Login</h2>
+
+<form id="loginForm">
+
+    <label>Username:</label>
+    <input type="text" id="loginUsername" required>
+
+    <br><br>
+
+    <label>Password:</label>
+    <input type="password" id="loginPassword" required>
+
+    <br><br>
+
+    <button type="submit">Login</button>
+
+</form>
+
+
+<!-- REGISTER -->
+<h2>Register</h2>
+
+<form id="registerForm">
+
+    <label>Username:</label>
+    <input type="text" id="registerUsername" required>
+
+    <br><br>
+
+    <label>Password:</label>
+    <input type="password" id="registerPassword" required>
+
+    <br><br>
+
+    <button type="submit">Register</button>
+
+</form>
+
+
+<!-- MESSAGE -->
+<p id="message"></p>
+
+
+<script>
+
+    // =========================
+    // LOGIN
+    // =========================
+
+    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const username = document.getElementById("loginUsername").value;
+        const password = document.getElementById("loginPassword").value;
+
+        const response = await fetch("/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+            // Automatically go to the market after successful login.
+            window.location.href = "/market";
+
+        } else {
+
+            document.getElementById("message").textContent =
+                "Login failed: " + data.error;
+
+        }
+
+    });
+
+
+    // =========================
+    // REGISTRATION
+    // =========================
+
+    document.getElementById("registerForm").addEventListener("submit", async function(event) {
+
+        event.preventDefault();
+
+        const username = document.getElementById("registerUsername").value;
+        const password = document.getElementById("registerPassword").value;
+
+        const response = await fetch("/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: username,
+                password: password
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+
+            document.getElementById("message").textContent =
+                "Registered as " + data.username + " (" + data.role + ")";
+
+        } else {
+
+            document.getElementById("message").textContent =
+                "Registration failed: " + data.error;
+
+        }
+
+    });
+
+</script>
+
+</body> </html>
