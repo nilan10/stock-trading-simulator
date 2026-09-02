@@ -4,6 +4,7 @@ from models.models import db
 from controllers.auth_controller import auth_controller
 from controllers.stock_controller import stock_controller
 from controllers.frontend_controller import frontend_controller
+from controllers.admin_controller import admin_bp
 
 app = Flask(__name__)
 
@@ -21,6 +22,7 @@ db.init_app(app)
 app.register_blueprint(auth_controller)
 app.register_blueprint(stock_controller)
 app.register_blueprint(frontend_controller)
+app.register_blueprint(admin_bp)
 
 
 @app.route("/")
