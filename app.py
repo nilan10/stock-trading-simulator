@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from models.models import db
 from controllers.auth_controller import auth_controller
+from controllers.stock_controller import stock_controller
 
 app = Flask(__name__)
 
@@ -17,6 +18,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 app.register_blueprint(auth_controller)
+app.register_blueprint(stock_controller)
 
 
 @app.route("/")
