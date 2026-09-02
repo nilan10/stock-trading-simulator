@@ -1,6 +1,6 @@
 from flask import session
 
-from models.models import db, User, Stock, Portfolio
+from models.models import db, User, Stock, Portfolio, Order
 
 
 def buy_stock(ticker, quantity):
@@ -56,6 +56,17 @@ def buy_stock(ticker, quantity):
     user.cash_balance -= total_cost
     stock.available_supply -= quantity
 
+    order = Order(
+        user_id=user.id,
+        stock_id=stock.id,
+        order_type="BUY",
+        quantity=quantity,
+        price=stock.current_price,
+        status="EXECUTED"
+    )
+
+    db.session.add(order)
+
     db.session.commit()
 
     return True, f"Bought {quantity} shares of {stock.ticker}."
@@ -96,6 +107,17 @@ def sell_stock(ticker, quantity):
 
     if portfolio.quantity == 0:
         db.session.delete(portfolio)
+
+    order = Order(
+        user_id=user.id,
+        stock_id=stock.id,
+        order_type="SELL",
+        quantity=quantity,
+        price=stock.current_price,
+        status="EXECUTED"
+    )
+
+    db.session.add(order)
 
     db.session.commit()
 
