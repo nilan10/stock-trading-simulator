@@ -35,6 +35,11 @@ class Stock(db.Model):
     current_price = db.Column(db.Numeric(12, 2), nullable=False)
     total_supply = db.Column(db.Integer, nullable=False, default=1000)
     available_supply = db.Column(db.Integer, nullable=False, default=1000)
+    volatility = db.Column(
+        db.Numeric(5, 2),
+        nullable=False,
+        default=5.00
+    )
 
 
 class StockPriceHistory(db.Model):
@@ -100,47 +105,69 @@ class Order(db.Model):
     __tablename__ = "orders"
 
     id = db.Column(db.Integer, primary_key=True)
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
         nullable=False
     )
+
     stock_id = db.Column(
         db.Integer,
         db.ForeignKey("stocks.id"),
         nullable=False
     )
+
     order_type = db.Column(
         db.Enum("BUY", "SELL"),
         nullable=False
     )
+
+    order_source = db.Column(
+        db.Enum("MARKET", "PLAYER"),
+        nullable=False,
+        default="PLAYER"
+    )
+
     quantity = db.Column(
         db.Integer,
         nullable=False
     )
+
     price = db.Column(
         db.Numeric(12, 2),
         nullable=False
     )
+
+    market_fee = db.Column(
+        db.Numeric(12, 2),
+        nullable=False,
+        default=0.00
+    )
+
     status = db.Column(
         db.Enum("OPEN", "EXECUTED", "CANCELLED"),
         nullable=False,
         default="OPEN"
     )
+
     created_at = db.Column(
         db.DateTime,
         nullable=False,
         server_default=db.func.current_timestamp()
     )
+
     accepted_by_user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
         nullable=True
     )
+
     accepted_at = db.Column(
         db.DateTime,
         nullable=True
     )
+
     executed_at = db.Column(
         db.DateTime,
         nullable=True
@@ -151,20 +178,24 @@ class AuditLog(db.Model):
     __tablename__ = "audit_logs"
 
     id = db.Column(db.Integer, primary_key=True)
+
     timestamp = db.Column(
         db.DateTime,
         nullable=False,
         server_default=db.func.current_timestamp()
     )
+
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("users.id"),
         nullable=True
     )
+
     action = db.Column(
         db.String(100),
         nullable=False
     )
+
     details = db.Column(
         db.Text,
         nullable=True
@@ -175,16 +206,19 @@ class GameState(db.Model):
     __tablename__ = "game_state"
 
     id = db.Column(db.Integer, primary_key=True)
+
     current_round = db.Column(
         db.Integer,
         nullable=False,
         default=1
     )
+
     time_remaining = db.Column(
         db.Integer,
         nullable=False,
         default=0
     )
+
     status = db.Column(
         db.Enum("ACTIVE", "PAUSED", "ENDED"),
         nullable=False,
@@ -195,4 +229,10 @@ class GameState(db.Model):
         db.Numeric(12, 2),
         nullable=False,
         default=100000.00
+    )
+
+    market_fee_percent = db.Column(
+        db.Numeric(5, 2),
+        nullable=False,
+        default=5.00
     )

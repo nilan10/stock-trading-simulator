@@ -83,8 +83,9 @@ def create_user_order(ticker, order_type, quantity, price):
 
 
 def get_open_orders():
-    orders = Order.query.filter_by(
-        status="OPEN"
+    orders = Order.query.filter(
+        Order.status == "OPEN",
+        Order.order_source == "PLAYER"
     ).order_by(
         Order.created_at.desc()
     ).all()
@@ -130,6 +131,9 @@ def update_user_order(order_id, quantity, price):
 
     if order.status != "OPEN":
         return False, "Only open orders can be modified."
+
+    if order.order_source != "PLAYER":
+        return False, "Market orders cannot be modified."
 
     if not isinstance(quantity, int) or quantity <= 0:
         return False, "Quantity must be a positive whole number."
@@ -223,6 +227,9 @@ def cancel_user_order(order_id):
     if order.status != "OPEN":
         return False, "Only open orders can be cancelled."
 
+    if order.order_source != "PLAYER":
+        return False, "Market orders must be cancelled through the market order system."
+
     stock = db.session.get(Stock, order.stock_id)
 
     if order.order_type == "SELL":
@@ -276,6 +283,9 @@ def accept_user_order(order_id):
 
     if order.status != "OPEN":
         return False, "This order is no longer available."
+
+    if order.order_source != "PLAYER":
+        return False, "Market orders cannot be accepted by other players."
 
     if order.user_id == accepting_user.id:
         return False, "You cannot accept your own order."
