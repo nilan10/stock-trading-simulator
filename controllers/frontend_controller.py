@@ -30,3 +30,7 @@ def me():
         "username": session.get("username"),
         "role": session.get("role")
     })
+
+@frontend_controller.route("/admin-page")
+def admin_page():
+    return render_template("admin.html")
