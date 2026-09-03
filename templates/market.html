@@ -21,12 +21,9 @@
     <div class="dashboard-user">
         <span id="welcomeUser">Welcome</span>
 
-        <button
-            class="logout-button"
-            id="logoutButton"
-        >
+        <a href="/logout" class="logout-button">
             LOG OUT
-        </button>
+        </a>
     </div>
 
 </header>
@@ -1599,7 +1596,6 @@ async function refreshDashboard() {
 /* =========================================================
    START PAGE
 ========================================================= */
-
 loadCurrentUser();
 
 refreshDashboard();
