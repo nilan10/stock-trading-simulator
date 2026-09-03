@@ -650,3 +650,116 @@ body {
     }
 
 }
+
+/* =========================================================
+   TRADE CONFIRMATION MODAL
+========================================================= */
+
+.modal-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    display: none;
+
+    justify-content: center;
+    align-items: center;
+
+    background-color: rgba(0, 0, 0, 0.65);
+
+    z-index: 1000;
+}
+
+
+.modal-overlay.show {
+    display: flex;
+}
+
+
+.modal-card {
+    width: 90%;
+
+    max-width: 420px;
+
+    padding: 30px;
+
+    border-radius: 14px;
+
+    background: #18222c;
+
+    color: white;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.45);
+
+    text-align: center;
+}
+
+
+.modal-card h2 {
+    margin-top: 0;
+
+    font-size: 24px;
+}
+
+
+.modal-card p {
+    margin: 18px 0 26px;
+
+    color: #cbd5e1;
+
+    font-size: 16px;
+}
+
+
+.modal-actions {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+}
+
+
+.modal-cancel-button,
+.modal-confirm-button {
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.modal-cancel-button {
+    background-color: #475569;
+}
+
+
+.confirm-buy {
+    background-color: #159447;
+}
+
+
+.confirm-sell {
+    background-color: #d20f2a;
+}
+
+/* TABLE LOADING / EMPTY / ERROR STATES */
+
+.table-state {
+    padding: 28px !important;
+    text-align: center !important;
+    color: #94a3b8 !important;
+    font-style: italic;
+}
+
+.table-error {
+    color: #ff7b83 !important;
+}
