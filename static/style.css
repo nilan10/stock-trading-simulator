@@ -1,0 +1,765 @@
+html,
+body {
+    margin: 0;
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+
+/* FULL PAGE BACKGROUND */
+
+.page {
+    min-height: 100vh;
+    width: 100%;
+
+    background-image: url("NewBackground1.jpeg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+
+/* LOGIN CARD */
+
+.login-card {
+    width: 100%;
+    max-width: 390px;
+
+    background-color: rgba(255, 255, 255, 0.96);
+
+    padding: 36px;
+
+    border-radius: 16px;
+
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.30);
+}
+
+
+/* TITLE */
+
+.login-card h1 {
+    margin-top: 0;
+    margin-bottom: 8px;
+
+    text-align: center;
+
+    font-size: 36px;
+
+    color: #65163e;
+}
+
+
+/* SUBTITLE */
+
+.login-subtitle {
+    text-align: center;
+
+    margin-top: 0;
+    margin-bottom: 28px;
+
+    color: #555555;
+
+    font-size: 15px;
+}
+
+
+/* LABELS */
+
+.login-card label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    color: #333333;
+}
+
+
+/* INPUT BOXES */
+
+.login-card input {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 13px;
+
+    margin-bottom: 18px;
+
+    border: 1px solid #cccccc;
+
+    border-radius: 8px;
+
+    font-size: 16px;
+
+    background-color: white;
+}
+
+
+.login-card input:focus {
+    outline: none;
+
+    border-color: #8b1e4f;
+
+    box-shadow: 0 0 0 2px rgba(139, 30, 79, 0.15);
+}
+
+
+/* LOGIN BUTTON */
+
+.login-card button {
+    width: 100%;
+
+    padding: 13px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background-color: #8b1e4f;
+
+    color: white;
+
+    font-size: 17px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.login-card button:hover {
+    background-color: #6f173f;
+}
+
+
+/* ERROR MESSAGE */
+
+#message {
+    margin-top: 14px;
+
+    text-align: center;
+
+    color: #b91c1c;
+}
+
+
+/* CREATE ACCOUNT */
+
+.register-section {
+    margin-top: 24px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #dddddd;
+
+    text-align: center;
+}
+
+
+.register-section span {
+    color: #555555;
+}
+
+
+.register-section a {
+    margin-left: 5px;
+
+    color: #8b1e4f;
+
+    font-weight: bold;
+
+    text-decoration: none;
+}
+
+
+.register-section a:hover {
+    text-decoration: underline;
+}
+
+/* =========================================================
+   SCP MARKET DASHBOARD
+========================================================= */
+
+.dashboard-body {
+    margin: 0;
+    min-height: 100vh;
+    background-color: #0f1720;
+    color: #f5f5f5;
+    font-family: Arial, sans-serif;
+}
+
+
+/* HEADER */
+
+.dashboard-header {
+    height: 70px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 28px;
+
+    background: linear-gradient(
+        90deg,
+        #741343,
+        #58102f
+    );
+
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.35);
+
+    box-sizing: border-box;
+}
+
+.dashboard-brand {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.dashboard-user {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-weight: 600;
+}
+
+.logout-button {
+    padding: 9px 15px;
+
+    background: transparent;
+
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 7px;
+
+    color: white;
+
+    cursor: pointer;
+}
+
+
+/* PAGE WIDTH */
+
+.dashboard-container {
+    width: 94%;
+    max-width: 1500px;
+    margin: 28px auto 50px;
+}
+
+
+/* TOP SUMMARY */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    gap: 22px;
+
+    margin-bottom: 24px;
+}
+
+.summary-card {
+    padding: 24px 28px;
+
+    border-radius: 12px;
+
+    background: linear-gradient(
+        145deg,
+        #19232e,
+        #151e27
+    );
+
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.summary-card p {
+    margin: 0 0 8px;
+
+    color: #cbd5e1;
+
+    font-size: 14px;
+}
+
+.summary-card h2 {
+    margin: 0 0 7px;
+
+    font-size: 30px;
+
+    color: white;
+}
+
+.summary-card span {
+    color: #9ca3af;
+
+    font-size: 13px;
+}
+
+
+/* MAIN TWO COLUMN LAYOUT */
+
+.dashboard-main-grid {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 2.2fr)
+        minmax(300px, 0.9fr);
+
+    gap: 22px;
+}
+
+
+/* CARDS */
+
+.dashboard-card {
+    margin-bottom: 22px;
+
+    padding: 24px;
+
+    border-radius: 12px;
+
+    background: linear-gradient(
+        145deg,
+        #18222c,
+        #141d26
+    );
+
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dashboard-card h2 {
+    margin: 0 0 7px;
+
+    color: white;
+
+    font-size: 20px;
+}
+
+.dashboard-description {
+    margin: 0 0 18px;
+
+    color: #aab3bd;
+
+    font-size: 14px;
+}
+
+
+/* TABLES */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.dashboard-card table {
+    width: 100%;
+
+    border-collapse: collapse;
+}
+
+.dashboard-card thead {
+    background: linear-gradient(
+        90deg,
+        #671237,
+        #4d102c
+    );
+}
+
+.dashboard-card th {
+    padding: 13px 14px;
+
+    text-align: left;
+
+    color: white;
+
+    font-size: 12px;
+
+    text-transform: uppercase;
+}
+
+.dashboard-card td {
+    padding: 14px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+    color: #e5e7eb;
+
+    font-size: 14px;
+}
+
+.dashboard-card tbody tr:hover {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.ticker-cell {
+    color: #65d47e !important;
+
+    font-weight: 700;
+}
+
+
+/* FORM LABELS */
+
+.side-card label {
+    display: block;
+
+    margin-top: 15px;
+    margin-bottom: 6px;
+
+    color: #cbd5e1;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+/* INPUTS AND DROPDOWNS */
+
+.side-card input,
+.side-card select {
+    width: 100%;
+
+    padding: 12px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #475569;
+    border-radius: 7px;
+
+    background-color: #141c25;
+
+    color: white;
+
+    font-size: 14px;
+}
+
+
+/* QUICK TRADE BUTTONS */
+
+.trade-buttons {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+
+    margin-top: 20px;
+}
+
+.buy-button {
+    width: 100%;
+
+    padding: 13px;
+
+    border: none;
+    border-radius: 7px;
+
+    background-color: #159447;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.sell-button {
+    width: 100%;
+
+    padding: 13px;
+
+    border: none;
+    border-radius: 7px;
+
+    background-color: #d20f2a;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.buy-button:hover {
+    background-color: #117a3a;
+}
+
+.sell-button:hover {
+    background-color: #ad0d23;
+}
+
+
+/* MARKET TRADE BUTTON */
+
+.trade-button {
+    padding: 9px 20px;
+
+    border: none;
+    border-radius: 7px;
+
+    background-color: #8b1e4f;
+
+    color: white;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* ACCEPT BUTTON */
+
+.accept-button {
+    padding: 9px 16px;
+
+    border: none;
+    border-radius: 7px;
+
+    background-color: #8b1e4f;
+
+    color: white;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* CREATE ORDER */
+
+.create-order-button {
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding: 13px;
+
+    border: none;
+    border-radius: 7px;
+
+    background: linear-gradient(
+        90deg,
+        #a11d59,
+        #7e1747
+    );
+
+    color: white;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* STATUS COLORS */
+
+.positive-value {
+    color: #5dd879 !important;
+
+    font-weight: 700;
+}
+
+.negative-value {
+    color: #ff5c63 !important;
+
+    font-weight: 700;
+}
+
+.status-badge {
+    display: inline-block;
+
+    padding: 5px 9px;
+
+    border-radius: 6px;
+
+    background: rgba(16, 185, 129, 0.17);
+
+    color: #63e6be;
+
+    font-size: 12px;
+
+    font-weight: 700;
+}
+
+
+/* MESSAGES */
+
+.dashboard-message {
+    margin-top: 12px;
+
+    color: #f4a7c2;
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1050px) {
+
+    .dashboard-main-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 800px) {
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .dashboard-header {
+        padding: 0 16px;
+    }
+
+    .dashboard-brand {
+        font-size: 20px;
+    }
+
+    #welcomeUser {
+        display: none;
+    }
+
+    .trade-buttons {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+/* =========================================================
+   TRADE CONFIRMATION MODAL
+========================================================= */
+
+.modal-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    display: none;
+
+    justify-content: center;
+    align-items: center;
+
+    background-color: rgba(0, 0, 0, 0.65);
+
+    z-index: 1000;
+}
+
+
+.modal-overlay.show {
+    display: flex;
+}
+
+
+.modal-card {
+    width: 90%;
+
+    max-width: 420px;
+
+    padding: 30px;
+
+    border-radius: 14px;
+
+    background: #18222c;
+
+    color: white;
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.45);
+
+    text-align: center;
+}
+
+
+.modal-card h2 {
+    margin-top: 0;
+
+    font-size: 24px;
+}
+
+
+.modal-card p {
+    margin: 18px 0 26px;
+
+    color: #cbd5e1;
+
+    font-size: 16px;
+}
+
+
+.modal-actions {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 12px;
+}
+
+
+.modal-cancel-button,
+.modal-confirm-button {
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 7px;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.modal-cancel-button {
+    background-color: #475569;
+}
+
+
+.confirm-buy {
+    background-color: #159447;
+}
+
+
+.confirm-sell {
+    background-color: #d20f2a;
+}
+
+/* TABLE LOADING / EMPTY / ERROR STATES */
+
+.table-state {
+    padding: 28px !important;
+    text-align: center !important;
+    color: #94a3b8 !important;
+    font-style: italic;
+}
+
+.table-error {
+    color: #ff7b83 !important;
+}

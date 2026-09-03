@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session,jsonify
+from flask import Blueprint, render_template
 
 
 frontend_controller = Blueprint("frontend", __name__)
@@ -15,10 +15,6 @@ def frontend():
 def market():
     return render_template("market.html")
 
-@frontend_controller.route("/me")
-def me():
-    return jsonify({
-        "user_id": session.get("user_id"),
-        "username": session.get("username"),
-        "role": session.get("role")
-    })
+@frontend_controller.route("/register-page")
+def register_page():
+    return render_template("register.html")

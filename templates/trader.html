@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PSC Markets</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>PSC MARKETS</h1>
+        <a href="/logout">LeaveSim</a>
+    </header>
+
+    <main>
+
+        <section>
+            <h2>Welcome, {{ user.username }}!</h2>
+            <p>Available Cash: ${{ user.cash_balance }}</p>
+        </section>
+
+        <section>
+            <h2>Market</h2>
+
+            <table>
+                <tr>
+                    <th>Ticker</th>
+                    <th>Company</th>
+                    <th>Price</th>
+                    <th>Available</th>
+                    <th>Trade</th>
+                </tr>
+
+                {% for stock in stocks %}
+                <tr>
+                    <td>{{ stock.ticker }}</td>
+                    <td>{{ stock.company_name }}</td>
+                    <td>${{ stock.current_price }}</td>
+                    <td>{{ stock.available_supply }}</td>
+
+                    <td>
+                        <form method="POST" action="/trade">
+
+                            <input
+                                type="hidden"
+                                name="stock_id"
+                                value="{{ stock.id }}"
+                            >
+
+                            <select name="order_type">
+                                <option value="BUY">Buy</option>
+                                <option value="SELL">Sell</option>
+                            </select>
+
+                            <input
+                                type="number"
+                                name="quantity"
+                                min="1"
+                                placeholder="Qty"
+                                required
+                            >
+
+                            <button type="submit">
+                                Submit
+                            </button>
+
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </table>
+
+        </section>
+
+        <section>
+            <h2>My Portfolio</h2>
+
+            <table>
+                <tr>
+                    <th>Stock</th>
+                    <th>Shares</th>
+                    <th>Average Cost</th>
+                </tr>
+
+                {% for item in portfolio %}
+                <tr>
+                    <td>{{ item.stock.ticker }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>${{ item.avg_buy_price }}</td>
+                </tr>
+                {% endfor %}
+
+            </table>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>
