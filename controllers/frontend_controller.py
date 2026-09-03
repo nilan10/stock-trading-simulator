@@ -14,3 +14,7 @@ def frontend():
 @frontend_controller.route("/market")
 def market():
     return render_template("market.html")
+
+@frontend_controller.route("/register-page")
+def register_page():
+    return render_template("register.html")
