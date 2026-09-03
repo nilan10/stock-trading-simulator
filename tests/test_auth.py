@@ -1,76 +1,110 @@
-from seed import app
-from models import db, User, AuditLog
-from auth_helpers import login_or_register, logout_user, assign_user_role
+import unittest
+from werkzeug.security import generate_password_hash
+from app import app
+from models.models import db, User
 
-def run_comprehensive_auth_tests():
-    with app.app_context():
-        print("==========================================")
-        print("   RUNNING AUTHENTICATION TEST  ")
-        print("==========================================\n")
 
-        # TEST 1: First-Time Login Auto-Registers as Admin
-        # Clear database users/logs for a clean test environment
-        db.session.query(AuditLog).delete()
-        db.session.query(User).delete()
-        db.session.commit()
+class TestAuthModule(unittest.TestCase):
 
-        admin_user, msg = login_or_register("first_admin", "adminpass")
-        print(f"[TEST 1] First User Registration: {msg}")
-        assert admin_user is not None, "Failed to register first user."
-        assert admin_user.role == 'Admin', f"Expected role 'Admin', got '{admin_user.role}'."
+    def setUp(self):
+        """Set up an isolated test database before each test run."""
+        app.config["TESTING"] = True
+        app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
+        self.client = app.test_client()
 
-        # TEST 2: Second User Auto-Registers as Trader
-        trader_user, msg = login_or_register("second_trader", "traderpass")
-        print(f"[TEST 2] Second User Registration: {msg}")
-        assert trader_user is not None, "Failed to register second user."
-        assert trader_user.role == 'Trader', f"Expected role 'Trader', got '{trader_user.role}'."
+        with app.app_context():
+            db.create_all()
 
-        # TEST 3: Existing User Correct Password Login
-        existing_user, msg = login_or_register("second_trader", "traderpass")
-        print(f"[TEST 3] Existing User Login: {msg}")
-        assert existing_user.id == trader_user.id, "Login returned wrong user instance."
+            # Seed existing users for auth testing
+            admin = User(
+                username="admin_user",
+                password_hash=generate_password_hash("admin123"),
+                role="Admin"
+            )
+            trader = User(
+                username="test_trader",
+                password_hash=generate_password_hash("password123"),
+                role="Trader"
+            )
+            db.session.add_all([admin, trader])
+            db.session.commit()
 
-        # TEST 4: Existing User Wrong Password (Should Fail)
-        failed_user, msg = login_or_register("second_trader", "wrongpassword")
-        print(f"[TEST 4] Wrong Password Handling: {msg}")
-        assert failed_user is None, "User logged in with incorrect password!"
+            self.admin_id = admin.id
+            self.trader_id = trader.id
 
-        # TEST 5: Admin Promotes Trader to Regulator
-        success, msg = assign_user_role(admin_user.id, trader_user.id, "Regulator")
-        print(f"[TEST 5] Admin Role Assignment: {msg}")
-        assert success is True, "Admin failed to change role."
+    def tearDown(self):
+        """Clean up the database session after each test."""
+        with app.app_context():
+            db.session.remove()
+            db.drop_all()
+
+    # ============================================================
+    # SERVICE / HELPER TESTS
+    # ============================================================
+
+    def test_register_user_success(self):
+        from services.auth_helpers import register_user
+        with app.app_context():
+            user, msg = register_user("new_trader", "securepass")
+            self.assertIsNotNone(user)
+            self.assertEqual(user.role, "Trader")
+            self.assertEqual(msg, "Account created successfully.")
+
+    def test_register_user_duplicate_username(self):
+        from services.auth_helpers import register_user
+        with app.app_context():
+            user, msg = register_user("test_trader", "password123")
+            self.assertIsNone(user)
+            self.assertEqual(msg, "Username already exists.")
+
+    def test_login_user_invalid_password(self):
+        from services.auth_helpers import login_user
+        with app.app_context():
+            user, msg = login_user("test_trader", "wrongpassword")
+            self.assertIsNone(user)
+            self.assertEqual(msg, "Invalid password.")
+
+    def test_assign_user_role_unauthorized(self):
+        from services.auth_helpers import assign_user_role
+        with app.app_context():
+            success, msg = assign_user_role(self.trader_id, self.admin_id, "Admin")
+            self.assertFalse(success)
+            self.assertIn("Unauthorized", msg)
+
+    def test_assign_user_role_success(self):
+        from services.auth_helpers import assign_user_role
+        with app.app_context():
+            success, msg = assign_user_role(self.admin_id, self.trader_id, "Regulator")
+            self.assertTrue(success)
+            
+            target = db.session.get(User, self.trader_id)
+            self.assertEqual(target.role, "Regulator")
+
+    # ============================================================
+    # CONTROLLER / ENDPOINT TESTS
+    # ============================================================
+
+    def test_register_endpoint_success(self):
+        payload = {"username": "registered_via_api", "password": "pass123"}
+        response = self.client.post("/register", json=payload)
         
-        # Verify role changed in DB
-        updated_trader = User.query.get(trader_user.id)
-        assert updated_trader.role == 'Regulator', "Role failed to update in database."
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.get_json()["username"], "registered_via_api")
 
-        # TEST 6: Non-Admin Tries to Change Role (Should Fail)
-        # Non-admin attempting to promote themselves
-        success, msg = assign_user_role(trader_user.id, trader_user.id, "Admin")
-        print(f"[TEST 6] Unauthorized Role Change: {msg}")
-        assert success is False, "Non-admin successfully changed a role!"
+    def test_login_endpoint_success(self):
+        payload = {"username": "test_trader", "password": "password123"}
+        response = self.client.post("/login", json=payload)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get_json()["username"], "test_trader")
 
-        # TEST 7: Change Role of Non-Existent User
-        success, msg = assign_user_role(admin_user.id, 9999, "Trader")
-        print(f"[TEST 7] Invalid Target User Role Change: {msg}")
-        assert success is False, "Role change succeeded for non-existent user!"
+    def test_login_endpoint_missing_fields(self):
+        payload = {"username": "test_trader"}
+        response = self.client.post("/login", json=payload)
+        
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("error", response.get_json())
 
-        # TEST 8: Logout Logging
-        logout_res = logout_user(trader_user.id)
-        print(f"[TEST 8] User Logout: Logged out successfully = {logout_res}")
-        assert logout_res is True, "Logout function returned False."
 
-        # TEST 9: Verify Audit Log History Entries
-        print("\n------------------------------------------")
-        print("          AUDIT LOG CHECK       ")
-        print("------------------------------------------")
-        audit_entries = AuditLog.query.order_by(AuditLog.id.asc()).all()
-        assert len(audit_entries) >= 5, "Audit log missed recording some actions!"
-
-        for entry in audit_entries:
-            print(f"Log #{entry.id} | User ID: {entry.user_id} | Action: {entry.action:<15} | Details: {entry.details}")
-
-        print("\nSUCCESS: All 9 authentication tests passed flawlessly!")
-
-if __name__ == '__main__':
-    run_comprehensive_auth_tests()
+if __name__ == "__main__":
+    unittest.main()
