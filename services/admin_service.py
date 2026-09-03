@@ -75,7 +75,8 @@ def update_game_settings(
     admin_user_id,
     current_round=None,
     time_remaining=None,
-    status=None
+    status=None,
+    starting_capital=None
 ):
     admin = _get_admin(admin_user_id)
 
@@ -105,6 +106,12 @@ def update_game_settings(
 
         state.status = status
 
+    if starting_capital is not None:
+        if starting_capital < 0:
+            return None, "Starting capital cannot be negative."
+
+        state.starting_capital = starting_capital
+
     db.session.commit()
 
     log_audit_action(
@@ -112,7 +119,8 @@ def update_game_settings(
         "GAME_SETTINGS_UPDATE",
         f"Updated round: {state.current_round}, "
         f"time: {state.time_remaining}, "
-        f"status: {state.status}"
+        f"status: {state.status}, "
+        f"starting capital: {state.starting_capital}"
     )
 
     return state, None
@@ -130,6 +138,18 @@ def reset_game(admin_user_id, confirmed=False):
             "Set confirmed to True to reset the game."
         )
 
+    # Get current game state.
+    state = GameState.query.first()
+
+    if not state:
+        state = GameState(
+            current_round=1,
+            time_remaining=60,
+            status="PAUSED",
+            starting_capital=100000.00
+        )
+        db.session.add(state)
+
     # Clear orders and portfolio records.
     Order.query.delete()
     Portfolio.query.delete()
@@ -138,30 +158,21 @@ def reset_game(admin_user_id, confirmed=False):
     users = User.query.all()
 
     for user in users:
-        user.cash_balance = 1000.00
+        user.cash_balance = state.starting_capital
         user.reserved_cash = 0.00
 
     # Reset Game State.
-    state = GameState.query.first()
-
-    if state:
-        state.current_round = 1
-        state.time_remaining = 60
-        state.status = "PAUSED"
-    else:
-        state = GameState(
-            current_round=1,
-            time_remaining=60,
-            status="PAUSED"
-        )
-        db.session.add(state)
+    state.current_round = 1
+    state.time_remaining = 60
+    state.status = "PAUSED"
 
     db.session.commit()
 
     log_audit_action(
         admin.id,
         "GAME_RESET",
-        "Admin performed a full game reset."
+        f"Admin performed a full game reset. "
+        f"Starting capital: {state.starting_capital}"
     )
 
     return True, "Game successfully reset."
@@ -180,6 +191,75 @@ def get_all_stocks(admin_user_id):
     stocks = Stock.query.order_by(Stock.ticker).all()
 
     return stocks, None
+
+
+def create_stock_admin(
+    admin_user_id,
+    ticker,
+    company_name,
+    current_price,
+    total_supply,
+    available_supply=None
+):
+    admin = _get_admin(admin_user_id)
+
+    if not admin:
+        return None, "Unauthorized. Only Admins can create stocks."
+
+    if not ticker:
+        return None, "Ticker is required."
+
+    if not company_name:
+        return None, "Company name is required."
+
+    if current_price < 0:
+        return None, "Stock price cannot be negative."
+
+    if total_supply < 0:
+        return None, "Total supply cannot be negative."
+
+    # Normalize ticker.
+    ticker = ticker.upper().strip()
+
+    # Check for duplicate ticker.
+    existing_stock = Stock.query.filter_by(ticker=ticker).first()
+
+    if existing_stock:
+        return None, "A stock with this ticker already exists."
+
+    # If available supply is not provided,
+    # make the entire initial supply available.
+    if available_supply is None:
+        available_supply = total_supply
+
+    if available_supply < 0:
+        return None, "Available supply cannot be negative."
+
+    if available_supply > total_supply:
+        return None, "Available supply cannot exceed total supply."
+
+    stock = Stock(
+        ticker=ticker,
+        company_name=company_name,
+        current_price=current_price,
+        total_supply=total_supply,
+        available_supply=available_supply
+    )
+
+    db.session.add(stock)
+    db.session.commit()
+
+    log_audit_action(
+        admin.id,
+        "STOCK_CREATE",
+        f"Admin created stock {stock.ticker} "
+        f"(ID: {stock.id}), "
+        f"Price: {stock.current_price}, "
+        f"Supply: {stock.total_supply}, "
+        f"Available: {stock.available_supply}"
+    )
+
+    return stock, None
 
 
 def update_stock_admin(
@@ -210,6 +290,12 @@ def update_stock_admin(
             return None, "Total supply cannot be negative."
 
         stock.total_supply = total_supply
+
+        if stock.available_supply > total_supply:
+            return None, (
+                "Total supply cannot be lower than "
+                "the current available supply."
+            )
 
     if available_supply is not None:
         if available_supply < 0:

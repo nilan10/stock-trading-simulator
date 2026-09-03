@@ -191,3 +191,8 @@ class GameState(db.Model):
         default="ACTIVE"
     )
 
+    starting_capital = db.Column(
+        db.Numeric(12, 2),
+        nullable=False,
+        default=100000.00
+    )

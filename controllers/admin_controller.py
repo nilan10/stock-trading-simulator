@@ -6,6 +6,7 @@ from services.admin_service import (
     update_game_settings,
     reset_game,
     get_all_stocks,
+    create_stock_admin,
     update_stock_admin,
     delete_stock_admin,
     get_all_users,
@@ -34,7 +35,8 @@ def current_game_state():
     return jsonify({
         "current_round": state.current_round,
         "time_remaining": state.time_remaining,
-        "status": state.status
+        "status": state.status,
+        "starting_capital": float(state.starting_capital)
     }), 200
 
 
@@ -49,7 +51,8 @@ def start_game_controller():
         "message": "Game started successfully.",
         "current_round": state.current_round,
         "time_remaining": state.time_remaining,
-        "status": state.status
+        "status": state.status,
+        "starting_capital": float(state.starting_capital)
     }), 200
 
 
@@ -61,7 +64,8 @@ def update_game_settings_controller():
         2,
         current_round=data.get("current_round"),
         time_remaining=data.get("time_remaining"),
-        status=data.get("status")
+        status=data.get("status"),
+        starting_capital=data.get("starting_capital")
     )
 
     if error:
@@ -71,7 +75,8 @@ def update_game_settings_controller():
         "message": "Game settings updated successfully.",
         "current_round": state.current_round,
         "time_remaining": state.time_remaining,
-        "status": state.status
+        "status": state.status,
+        "starting_capital": float(state.starting_capital)
     }), 200
 
 
@@ -106,12 +111,42 @@ def get_stocks():
         {
             "id": stock.id,
             "ticker": stock.ticker,
+            "company_name": stock.company_name,
             "current_price": float(stock.current_price),
             "total_supply": stock.total_supply,
             "available_supply": stock.available_supply
         }
         for stock in stocks
     ]), 200
+
+
+@admin_bp.route("/stocks", methods=["POST"])
+def create_stock():
+    data = request.get_json() or {}
+
+    stock, error = create_stock_admin(
+        2,
+        ticker=data.get("ticker"),
+        company_name=data.get("company_name"),
+        current_price=data.get("current_price"),
+        total_supply=data.get("total_supply"),
+        available_supply=data.get("available_supply")
+    )
+
+    if error:
+        return jsonify({"error": error}), 400
+
+    return jsonify({
+        "message": "Stock created successfully.",
+        "stock": {
+            "id": stock.id,
+            "ticker": stock.ticker,
+            "company_name": stock.company_name,
+            "current_price": float(stock.current_price),
+            "total_supply": stock.total_supply,
+            "available_supply": stock.available_supply
+        }
+    }), 201
 
 
 @admin_bp.route("/stocks/<int:stock_id>", methods=["PUT"])
@@ -134,6 +169,7 @@ def update_stock(stock_id):
         "stock": {
             "id": stock.id,
             "ticker": stock.ticker,
+            "company_name": stock.company_name,
             "current_price": float(stock.current_price),
             "total_supply": stock.total_supply,
             "available_supply": stock.available_supply
