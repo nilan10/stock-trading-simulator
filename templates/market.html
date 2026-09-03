@@ -1,60 +1,688 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>Market Data</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCP Market Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
 </head>
 
-<body>
+<body class="dashboard-body">
 
-    <h1>Stock Market</h1>
+<header class="dashboard-header">
+    <div class="dashboard-brand">SCP MARKET</div>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Ticker</th>
-                <th>Company</th>
-                <th>Current Price</th>
-                <th>Total Supply</th>
-                <th>Available Supply</th>
-            </tr>
-        </thead>
-
-        <tbody id="stockTable">
-        </tbody>
-    </table>
+    <div class="dashboard-user">
+        <span id="welcomeUser">Welcome</span>
+        <button class="logout-button" id="logoutButton">LOG OUT</button>
+    </div>
+</header>
 
 
-    <script>
+<main class="dashboard-container">
 
-        // Get stock data from the Flask API
-        async function loadStocks() {
+    <!-- ACCOUNT SUMMARY -->
+    <section class="summary-grid">
 
-            const response = await fetch("/stocks");
+        <div class="summary-card">
+            <p>Cash Balance</p>
+            <h2 id="cashBalance">$0.00</h2>
+            <span>Available to trade</span>
+        </div>
 
-            const stocks = await response.json();
+        <div class="summary-card">
+            <p>Portfolio Value</p>
+            <h2 id="portfolioValue">$0.00</h2>
+            <span>Cash + holdings</span>
+        </div>
 
-            const table = document.getElementById("stockTable");
+        <div class="summary-card">
+            <p>My Holdings</p>
+            <h2 id="holdingCount">0 Stocks</h2>
+            <span>Stocks currently owned</span>
+        </div>
 
-            for (const stock of stocks) {
+    </section>
 
-                const row = document.createElement("tr");
 
-                row.innerHTML = `
-                    <td>${stock.ticker}</td>
-                    <td>${stock.company_name}</td>
-                    <td>$${stock.current_price}</td>
-                    <td>${stock.total_supply}</td>
-                    <td>${stock.available_supply}</td>
-                `;
+    <section class="dashboard-main-grid">
 
-                table.appendChild(row);
+        <!-- LEFT SIDE -->
+        <div>
+
+            <!-- MARKET -->
+            <section class="dashboard-card">
+
+                <h2>MARKET</h2>
+
+                <p class="dashboard-description">
+                    View stocks currently available for trading.
+                </p>
+
+                <div class="table-wrapper">
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Company</th>
+                            <th>Current Price</th>
+                            <th>Available Supply</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="stockTable">
+                        </tbody>
+
+                    </table>
+                </div>
+
+            </section>
+
+
+            <!-- OPEN ORDERS -->
+            <section class="dashboard-card">
+
+                <h2>OPEN PLAYER ORDERS</h2>
+
+                <p class="dashboard-description">
+                    Orders created by other traders.
+                </p>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>Trader</th>
+                            <th>Ticker</th>
+                            <th>Type</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="ordersTable">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+
+            <!-- HOLDINGS -->
+            <section class="dashboard-card">
+
+                <h2>MY HOLDINGS</h2>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>Ticker</th>
+                            <th>Shares</th>
+                            <th>Avg. Price</th>
+                            <th>Current</th>
+                            <th>Gain / Loss</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="holdingsTable">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </div>
+
+
+        <!-- RIGHT SIDE -->
+        <aside>
+
+            <!-- QUICK TRADE -->
+            <section class="dashboard-card side-card">
+
+                <h2>QUICK TRADE</h2>
+
+                <p class="dashboard-description">
+                    Buy or sell immediately at the current market price.
+                </p>
+
+                <label for="tradeTicker">Ticker</label>
+                <select id="tradeTicker"></select>
+
+                <label for="tradeQuantity">Quantity</label>
+                <input
+                    type="number"
+                    id="tradeQuantity"
+                    min="1"
+                    placeholder="Enter quantity"
+                >
+
+                <div class="trade-buttons">
+
+                    <button
+                        id="buyButton"
+                        class="buy-button"
+                    >
+                        BUY NOW
+                    </button>
+
+                    <button
+                        id="sellButton"
+                        class="sell-button"
+                    >
+                        SELL NOW
+                    </button>
+
+                </div>
+
+                <p id="tradeMessage" class="dashboard-message"></p>
+
+            </section>
+
+
+            <!-- CREATE ORDER -->
+            <section class="dashboard-card side-card">
+
+                <h2>CREATE ORDER</h2>
+
+                <p class="dashboard-description">
+                    Create a limit order at the price you choose.
+                </p>
+
+                <label for="orderTicker">Ticker</label>
+                <select id="orderTicker"></select>
+
+                <label for="orderType">Order Type</label>
+                <select id="orderType">
+                    <option value="BUY">BUY</option>
+                    <option value="SELL">SELL</option>
+                </select>
+
+                <label for="orderQuantity">Quantity</label>
+                <input
+                    type="number"
+                    id="orderQuantity"
+                    min="1"
+                    placeholder="Enter quantity"
+                >
+
+                <label for="orderPrice">Your Price</label>
+                <input
+                    type="number"
+                    id="orderPrice"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="Enter price"
+                >
+
+                <button
+                    id="createOrderButton"
+                    class="create-order-button"
+                >
+                    CREATE ORDER
+                </button>
+
+                <p id="orderMessage" class="dashboard-message"></p>
+
+            </section>
+
+        </aside>
+
+    </section>
+
+
+    <!-- HISTORY -->
+    <section class="dashboard-card">
+
+        <h2>TRADE HISTORY</h2>
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                <tr>
+                    <th>Ticker</th>
+                    <th>Type</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+                </thead>
+
+                <tbody id="historyTable">
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script>
+
+/* CURRENT USER */
+async function loadCurrentUser() {
+
+    const response = await fetch("/me");
+    const user = await response.json();
+
+    if (user.username) {
+        document.getElementById("welcomeUser").textContent =
+            "Welcome, " + user.username;
+    }
+}
+
+
+/* STOCKS */
+async function loadStocks() {
+
+    const response = await fetch("/stocks");
+    const stocks = await response.json();
+
+    const stockTable =
+        document.getElementById("stockTable");
+
+    const tradeTicker =
+        document.getElementById("tradeTicker");
+
+    const orderTicker =
+        document.getElementById("orderTicker");
+
+    stockTable.innerHTML = "";
+    tradeTicker.innerHTML = "";
+    orderTicker.innerHTML = "";
+
+    for (const stock of stocks) {
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+            <td class="ticker-cell">${stock.ticker}</td>
+            <td>${stock.company_name}</td>
+            <td>$${stock.current_price.toFixed(2)}</td>
+            <td>${stock.available_supply}</td>
+            <td>
+                <button
+                    class="trade-button"
+                    onclick="selectTradeStock('${stock.ticker}')"
+                >
+                    TRADE
+                </button>
+            </td>
+        `;
+
+        stockTable.appendChild(row);
+
+        const tradeOption =
+            document.createElement("option");
+
+        tradeOption.value =
+            stock.ticker;
+
+        tradeOption.textContent =
+            `${stock.ticker} - ${stock.company_name}`;
+
+        tradeTicker.appendChild(tradeOption);
+
+        const orderOption =
+            tradeOption.cloneNode(true);
+
+        orderTicker.appendChild(orderOption);
+    }
+}
+
+
+function selectTradeStock(ticker) {
+    document.getElementById("tradeTicker").value = ticker;
+    document.getElementById("tradeQuantity").focus();
+}
+
+
+/* PORTFOLIO */
+async function loadPortfolio() {
+
+    const response = await fetch("/portfolio");
+
+    if (!response.ok) {
+        return;
+    }
+
+    const portfolio = await response.json();
+
+    document.getElementById("cashBalance").textContent =
+        "$" + portfolio.cash_balance.toFixed(2);
+
+    document.getElementById("portfolioValue").textContent =
+        "$" + portfolio.total_portfolio_value.toFixed(2);
+
+    const count = portfolio.holdings.length;
+
+    document.getElementById("holdingCount").textContent =
+        count + (count === 1 ? " Stock" : " Stocks");
+
+    const table =
+        document.getElementById("holdingsTable");
+
+    table.innerHTML = "";
+
+    for (const holding of portfolio.holdings) {
+
+        const gain =
+            holding.unrealized_gain_loss;
+
+        const gainClass =
+            gain >= 0 ? "positive-value" : "negative-value";
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+            <td class="ticker-cell">${holding.ticker}</td>
+            <td>${holding.quantity}</td>
+            <td>$${holding.avg_buy_price.toFixed(2)}</td>
+            <td>$${holding.current_price.toFixed(2)}</td>
+            <td class="${gainClass}">
+                ${gain >= 0 ? "+" : ""}$${gain.toFixed(2)}
+            </td>
+        `;
+
+        table.appendChild(row);
+    }
+}
+
+
+/* BUY / SELL */
+async function marketTrade(type) {
+
+    const ticker =
+        document.getElementById("tradeTicker").value;
+
+    const quantity =
+        parseInt(
+            document.getElementById("tradeQuantity").value
+        );
+
+    const message =
+        document.getElementById("tradeMessage");
+
+    if (!quantity || quantity <= 0) {
+        message.textContent =
+            "Enter a valid quantity.";
+        return;
+    }
+
+    const endpoint =
+        type === "BUY" ? "/buy" : "/sell";
+
+    const response =
+        await fetch(endpoint, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                ticker: ticker,
+                quantity: quantity
+            })
+
+        });
+
+    const data =
+        await response.json();
+
+    if (response.ok) {
+
+        message.textContent =
+            data.message;
+
+        await refreshDashboard();
+
+    } else {
+
+        message.textContent =
+            data.error;
+
+    }
+}
+
+
+document.getElementById("buyButton")
+    .addEventListener(
+        "click",
+        () => marketTrade("BUY")
+    );
+
+
+document.getElementById("sellButton")
+    .addEventListener(
+        "click",
+        () => marketTrade("SELL")
+    );
+
+
+/* ORDERS */
+async function loadOrders() {
+
+    const response =
+        await fetch("/orders");
+
+    const orders =
+        await response.json();
+
+    const table =
+        document.getElementById("ordersTable");
+
+    table.innerHTML = "";
+
+    for (const order of orders) {
+
+        const row =
+            document.createElement("tr");
+
+        const typeClass =
+            order.order_type === "BUY"
+                ? "positive-value"
+                : "negative-value";
+
+        row.innerHTML = `
+            <td>${order.username}</td>
+            <td class="ticker-cell">${order.ticker}</td>
+            <td class="${typeClass}">${order.order_type}</td>
+            <td>${order.quantity}</td>
+            <td>$${order.price.toFixed(2)}</td>
+            <td>
+                <span class="status-badge">
+                    ${order.status}
+                </span>
+            </td>
+            <td>
+                <button
+                    class="accept-button"
+                    onclick="acceptOrder(${order.order_id})"
+                >
+                    ACCEPT
+                </button>
+            </td>
+        `;
+
+        table.appendChild(row);
+    }
+}
+
+
+async function acceptOrder(orderId) {
+
+    const response =
+        await fetch(
+            `/orders/${orderId}/accept`,
+            {
+                method: "POST"
             }
+        );
+
+    const data =
+        await response.json();
+
+    if (!response.ok) {
+        alert(data.error);
+        return;
+    }
+
+    alert(data.message);
+
+    await refreshDashboard();
+}
+
+
+/* CREATE ORDER */
+document.getElementById("createOrderButton")
+    .addEventListener(
+        "click",
+        async function () {
+
+            const ticker =
+                document.getElementById("orderTicker").value;
+
+            const orderType =
+                document.getElementById("orderType").value;
+
+            const quantity =
+                parseInt(
+                    document.getElementById("orderQuantity").value
+                );
+
+            const price =
+                parseFloat(
+                    document.getElementById("orderPrice").value
+                );
+
+            const message =
+                document.getElementById("orderMessage");
+
+            if (!quantity || quantity <= 0 || !price || price <= 0) {
+
+                message.textContent =
+                    "Enter a valid quantity and price.";
+
+                return;
+            }
+
+            const response =
+                await fetch("/orders", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        ticker: ticker,
+                        order_type: orderType,
+                        quantity: quantity,
+                        price: price
+                    })
+
+                });
+
+            const data =
+                await response.json();
+
+            if (response.ok) {
+
+                message.textContent =
+                    data.message;
+
+                await refreshDashboard();
+
+            } else {
+
+                message.textContent =
+                    data.error;
+
+            }
+
         }
+    );
 
-        // Load stocks when the page opens
-        loadStocks();
 
-    </script>
+/* HISTORY */
+async function loadHistory() {
+
+    const response =
+        await fetch("/portfolio/history");
+
+    if (!response.ok) {
+        return;
+    }
+
+    const history =
+        await response.json();
+
+    const table =
+        document.getElementById("historyTable");
+
+    table.innerHTML = "";
+
+    for (const trade of history) {
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+            <td class="ticker-cell">${trade.ticker}</td>
+            <td>${trade.order_type}</td>
+            <td>${trade.quantity}</td>
+            <td>$${trade.price.toFixed(2)}</td>
+            <td>${trade.status}</td>
+            <td>${new Date(trade.created_at).toLocaleString()}</td>
+        `;
+
+        table.appendChild(row);
+    }
+}
+
+
+/* REFRESH */
+async function refreshDashboard() {
+
+    await loadStocks();
+    await loadPortfolio();
+    await loadOrders();
+    await loadHistory();
+}
+
+
+/* START */
+loadCurrentUser();
+refreshDashboard();
+
+</script>
 
 </body>
 </html>
