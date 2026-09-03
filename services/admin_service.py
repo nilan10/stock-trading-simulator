@@ -7,7 +7,9 @@ from models.models import (
     Order,
     AuditLog
 )
+
 from services.audit_service import log_audit_action
+from database.seed import reset_database
 
 
 # ============================================================
@@ -56,7 +58,9 @@ def start_game(admin_user_id):
             time_remaining=60,
             status="ACTIVE"
         )
+
         db.session.add(state)
+
     else:
         state.status = "ACTIVE"
 
@@ -126,7 +130,18 @@ def update_game_settings(
     return state, None
 
 
+# ============================================================
+# SOFT RESET
+# ============================================================
+
 def reset_game(admin_user_id, confirmed=False):
+    """
+    Soft reset.
+
+    Resets gameplay state while preserving the current
+    stock market and its configuration.
+    """
+
     admin = _get_admin(admin_user_id)
 
     if not admin:
@@ -138,7 +153,6 @@ def reset_game(admin_user_id, confirmed=False):
             "Set confirmed to True to reset the game."
         )
 
-    # Get current game state.
     state = GameState.query.first()
 
     if not state:
@@ -146,22 +160,32 @@ def reset_game(admin_user_id, confirmed=False):
             current_round=1,
             time_remaining=60,
             status="PAUSED",
-            starting_capital=100000.00
+            starting_capital=150000.00
         )
+
         db.session.add(state)
 
-    # Clear orders and portfolio records.
+    # --------------------------------------------------------
+    # CLEAR ORDERS AND PORTFOLIOS
+    # --------------------------------------------------------
+
     Order.query.delete()
     Portfolio.query.delete()
 
-    # Reset user balances and reservations.
+    # --------------------------------------------------------
+    # RESET USER BALANCES
+    # --------------------------------------------------------
+
     users = User.query.all()
 
     for user in users:
         user.cash_balance = state.starting_capital
         user.reserved_cash = 0.00
 
-    # Reset Game State.
+    # --------------------------------------------------------
+    # RESET GAME STATE
+    # --------------------------------------------------------
+
     state.current_round = 1
     state.time_remaining = 60
     state.status = "PAUSED"
@@ -171,11 +195,52 @@ def reset_game(admin_user_id, confirmed=False):
     log_audit_action(
         admin.id,
         "GAME_RESET",
-        f"Admin performed a full game reset. "
-        f"Starting capital: {state.starting_capital}"
+        f"Admin performed a soft game reset. "
+        f"Starting capital: {state.starting_capital}. "
+        f"Current market configuration was preserved."
     )
 
     return True, "Game successfully reset."
+
+
+# ============================================================
+# HARD RESET
+# ============================================================
+
+def hard_reset_game(admin_user_id, confirmed=False):
+    """
+    Hard reset.
+
+    Completely restores the simulator to the canonical
+    state defined in seed.py.
+    """
+
+    admin = _get_admin(admin_user_id)
+
+    if not admin:
+        return False, (
+            "Unauthorized. Only Admins can perform a hard reset."
+        )
+
+    if not confirmed:
+        return False, (
+            "Confirmation required. "
+            "Set confirmed to True to perform a hard reset."
+        )
+
+    try:
+        reset_database()
+
+        return True, (
+            "Hard reset successful. "
+            "The canonical users, stocks, game settings, "
+            "and market state have been restored."
+        )
+
+    except Exception as error:
+        db.session.rollback()
+
+        return False, f"Hard reset failed: {error}"
 
 
 # ============================================================
@@ -218,17 +283,13 @@ def create_stock_admin(
     if total_supply < 0:
         return None, "Total supply cannot be negative."
 
-    # Normalize ticker.
     ticker = ticker.upper().strip()
 
-    # Check for duplicate ticker.
     existing_stock = Stock.query.filter_by(ticker=ticker).first()
 
     if existing_stock:
         return None, "A stock with this ticker already exists."
 
-    # If available supply is not provided,
-    # make the entire initial supply available.
     if available_supply is None:
         available_supply = total_supply
 
@@ -330,7 +391,6 @@ def delete_stock_admin(admin_user_id, stock_id):
 
     ticker = stock.ticker
 
-    # Delete dependent records before removing the stock.
     Portfolio.query.filter_by(stock_id=stock_id).delete()
     Order.query.filter_by(stock_id=stock_id).delete()
 
