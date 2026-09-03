@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Create Account</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="page">
+
+    <div class="login-card">
+
+        <h1>Create Account</h1>
+
+        <p class="login-subtitle">
+            Register to start trading.
+        </p>
+
+        <form id="registerForm">
+
+            <label for="registerUsername">USERNAME</label>
+
+            <input
+                type="text"
+                id="registerUsername"
+                placeholder="Choose a username"
+                required
+            >
+
+            <label for="registerPassword">PASSWORD</label>
+
+            <input
+                type="password"
+                id="registerPassword"
+                placeholder="Choose a password"
+                required
+            >
+
+            <button type="submit">
+                CREATE ACCOUNT
+            </button>
+
+        </form>
+
+        <p id="message"></p>
+
+        <div class="register-section">
+
+            <span>Already have an account?</span>
+
+            <a href="/app">
+                BACK TO LOGIN
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+document.getElementById("registerForm")
+    .addEventListener(
+        "submit",
+        async function(event) {
+
+            event.preventDefault();
+
+            const username =
+                document.getElementById(
+                    "registerUsername"
+                ).value;
+
+            const password =
+                document.getElementById(
+                    "registerPassword"
+                ).value;
+
+
+            const response =
+                await fetch("/register", {
+
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+
+                });
+
+
+            const data =
+                await response.json();
+
+
+            if (response.ok) {
+
+                document.getElementById(
+                    "message"
+                ).textContent =
+                    "Account created! You can now log in.";
+
+            } else {
+
+                document.getElementById(
+                    "message"
+                ).textContent =
+                    data.error;
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>

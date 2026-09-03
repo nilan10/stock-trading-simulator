@@ -1,4 +1,4 @@
-from models.models import db, User
+from models.models import db, User, GameState
 from services.audit_service import log_audit_action
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -34,12 +34,15 @@ def register_user(username, password):
     if existing_user:
         return None, "Username already exists."
 
+    # Get the current game settings.
+    game_state = GameState.query.first()
+
     # Store a hashed password instead of the actual password.
     new_user = User(
         username=username,
         password_hash=generate_password_hash(password),
         role="Trader",
-        cash_balance=1000.00
+        cash_balance=game_state.starting_capital
     )
 
     db.session.add(new_user)

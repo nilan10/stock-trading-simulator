@@ -1,85 +1,103 @@
 <!DOCTYPE html>
+<html lang="en">
 
-<html> <head> <title>Stock Trading Simulator</title> </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SCP Market</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
 
 <body>
 
-<h1>Stock Trading Simulator</h1>
+<div class="page">
 
+    <div class="login-card">
 
-<!-- LOGIN -->
-<h2>Login</h2>
+        <h1>SCP Market</h1>
 
-<form id="loginForm">
+        <p class="login-subtitle">
+            Secure access to your stock trading simulator
+        </p>
 
-    <label>Username:</label>
-    <input type="text" id="loginUsername" required>
+        <form id="loginForm">
 
-    <br><br>
+            <label for="loginUsername">USERNAME</label>
 
-    <label>Password:</label>
-    <input type="password" id="loginPassword" required>
+            <input
+                type="text"
+                id="loginUsername"
+                placeholder="Enter username..."
+                required
+            >
 
-    <br><br>
+            <label for="loginPassword">PASSWORD</label>
 
-    <button type="submit">Login</button>
+            <input
+                type="password"
+                id="loginPassword"
+                placeholder="Enter password..."
+                required
+            >
 
-</form>
+            <button type="submit">
+                LOG IN NOW
+            </button>
 
+        </form>
 
-<!-- REGISTER -->
-<h2>Register</h2>
+        <p id="message"></p>
 
-<form id="registerForm">
+        <div class="register-section">
 
-    <label>Username:</label>
-    <input type="text" id="registerUsername" required>
+            <span>New to SCP Market?</span>
 
-    <br><br>
+            <a href="/register-page">
+                CREATE AN ACCOUNT
+            </a>
 
-    <label>Password:</label>
-    <input type="password" id="registerPassword" required>
+        </div>
 
-    <br><br>
+    </div>
 
-    <button type="submit">Register</button>
-
-</form>
-
-
-<!-- MESSAGE -->
-<p id="message"></p>
-
+</div>
 
 <script>
 
-    // =========================
-    // LOGIN
-    // =========================
-
-    document.getElementById("loginForm").addEventListener("submit", async function(event) {
+document.getElementById("loginForm").addEventListener(
+    "submit",
+    async function(event) {
 
         event.preventDefault();
 
-        const username = document.getElementById("loginUsername").value;
-        const password = document.getElementById("loginPassword").value;
+        const username =
+            document.getElementById("loginUsername").value;
+
+        const password =
+            document.getElementById("loginPassword").value;
 
         const response = await fetch("/login", {
+
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json"
             },
+
             body: JSON.stringify({
                 username: username,
                 password: password
             })
+
         });
 
         const data = await response.json();
 
         if (response.ok) {
 
-            // Automatically go to the market after successful login.
             window.location.href = "/market";
 
         } else {
@@ -89,47 +107,10 @@
 
         }
 
-    });
-
-
-    // =========================
-    // REGISTRATION
-    // =========================
-
-    document.getElementById("registerForm").addEventListener("submit", async function(event) {
-
-        event.preventDefault();
-
-        const username = document.getElementById("registerUsername").value;
-        const password = document.getElementById("registerPassword").value;
-
-        const response = await fetch("/register", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password
-            })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-
-            document.getElementById("message").textContent =
-                "Registered as " + data.username + " (" + data.role + ")";
-
-        } else {
-
-            document.getElementById("message").textContent =
-                "Registration failed: " + data.error;
-
-        }
-
-    });
+    }
+);
 
 </script>
 
-</body> </html>
+</body>
+</html>
