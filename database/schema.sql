@@ -27,7 +27,8 @@ CREATE TABLE stocks (
     company_name VARCHAR(100) NOT NULL,
     current_price DECIMAL(12,2) NOT NULL,
     total_supply INT NOT NULL DEFAULT 1000,
-    available_supply INT NOT NULL DEFAULT 1000
+    available_supply INT NOT NULL DEFAULT 1000,
+    volatility DECIMAL(5,2) NOT NULL DEFAULT 5.00
 );
 
 
@@ -39,7 +40,7 @@ CREATE TABLE stock_price_history (
     id INT AUTO_INCREMENT PRIMARY KEY,
     stock_id INT NOT NULL,
     price DECIMAL(12,2) NOT NULL,
-    recorded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    recorded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_price_history_stock
         FOREIGN KEY (stock_id) REFERENCES stocks(id)
@@ -78,10 +79,12 @@ CREATE TABLE orders (
     user_id INT NOT NULL,
     stock_id INT NOT NULL,
     order_type ENUM('BUY', 'SELL') NOT NULL,
+    order_source ENUM('MARKET', 'PLAYER') NOT NULL DEFAULT 'PLAYER',
     quantity INT NOT NULL,
     price DECIMAL(12,2) NOT NULL,
+    market_fee DECIMAL(12,2) NOT NULL DEFAULT 0.00,
     status ENUM('OPEN', 'EXECUTED', 'CANCELLED') NOT NULL DEFAULT 'OPEN',
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     accepted_by_user_id INT NULL,
     accepted_at DATETIME NULL,
     executed_at DATETIME NULL,
@@ -103,10 +106,10 @@ CREATE TABLE orders (
 
 CREATE TABLE audit_logs (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     user_id INT NULL,
     action VARCHAR(100) NOT NULL,
-    details TEXT,
+    details TEXT NULL,
 
     CONSTRAINT fk_audit_user
         FOREIGN KEY (user_id) REFERENCES users(id)
@@ -121,5 +124,7 @@ CREATE TABLE game_state (
     id INT AUTO_INCREMENT PRIMARY KEY,
     current_round INT NOT NULL DEFAULT 1,
     time_remaining INT NOT NULL DEFAULT 0,
-    status ENUM('ACTIVE', 'PAUSED', 'ENDED') NOT NULL DEFAULT 'ACTIVE'
+    status ENUM('ACTIVE', 'PAUSED', 'ENDED') NOT NULL DEFAULT 'ACTIVE',
+    starting_capital DECIMAL(12,2) NOT NULL DEFAULT 100000.00,
+    market_fee_percent DECIMAL(5,2) NOT NULL DEFAULT 5.00
 );

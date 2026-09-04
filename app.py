@@ -1,5 +1,8 @@
 import os
+import threading
+
 from flask import Flask
+
 from models.models import db
 from controllers.auth_controller import auth_controller
 from controllers.stock_controller import stock_controller
@@ -7,6 +10,9 @@ from controllers.frontend_controller import frontend_controller
 from controllers.admin_controller import admin_bp
 from controllers.order_controller import order_controller
 from controllers.portfolio_controller import portfolio_controller
+from services.game_service import run_game_timer
+from controllers.game_controller import game_controller
+
 
 app = Flask(__name__)
 
@@ -29,6 +35,7 @@ app.register_blueprint(frontend_controller)
 app.register_blueprint(admin_bp)
 app.register_blueprint(order_controller)
 app.register_blueprint(portfolio_controller)
+app.register_blueprint(game_controller)
 
 
 @app.route("/")
@@ -37,4 +44,13 @@ def home():
 
 
 if __name__ == "__main__":
+
+    timer_thread = threading.Thread(
+        target=run_game_timer,
+        args=(app,),
+        daemon=True
+    )
+
+    timer_thread.start()
+
     app.run(host="0.0.0.0", port=5000)
