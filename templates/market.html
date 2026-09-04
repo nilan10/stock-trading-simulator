@@ -18,15 +18,55 @@
         SCP MARKET
     </div>
 
+    <!-- ==========================================
+         1-MINUTE TRADING ROUND TIMER
+         Frontend-only for now.
+         When it reaches 00:00, the dashboard
+         re-fetches the latest backend data.
+    =========================================== -->
+    <div
+        class="market-round-timer"
+        style="
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.10);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        "
+    >
+        <span
+            style="
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 0.7px;
+                opacity: 0.8;
+                text-transform: uppercase;
+            "
+        >
+            Round <span id="roundNumber">1</span>
+        </span>
+
+        <strong
+            id="roundTimer"
+            style="
+                font-size: 22px;
+                letter-spacing: 1px;
+                min-width: 62px;
+                text-align: center;
+            "
+        >
+            01:00
+        </strong>
+    </div>
+
     <div class="dashboard-user">
         <span id="welcomeUser">Welcome</span>
 
-        <button
-            class="logout-button"
-            id="logoutButton"
-        >
+        <a href="/logout" class="logout-button">
             LOG OUT
-        </button>
+        </a>
     </div>
 
 </header>
@@ -124,6 +164,7 @@
                         <thead>
 
                         <tr>
+                            <th>Order ID</th>
                             <th>Trader</th>
                             <th>Ticker</th>
                             <th>Type</th>
@@ -176,6 +217,43 @@
 
             </section>
 
+
+            <!-- LEADERBOARD -->
+
+            <section class="dashboard-card">
+
+                <h2>LEADERBOARD</h2>
+
+                <p class="dashboard-description">
+                    See how traders rank by total portfolio value.
+                </p>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Username</th>
+                                <th>Portfolio Value</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="marketLeaderboardTable">
+                            <tr>
+                                <td colspan="3" class="table-state">
+                                    Leaderboard data will appear here.
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
         </div>
 
 
@@ -189,10 +267,12 @@
 
             <section class="dashboard-card side-card">
 
-                <h2>QUICK TRADE</h2>
+                <h2>MARKET TRADE</h2>
 
                 <p class="dashboard-description">
                     Buy or sell immediately at the current market price.
+                    <br>
+                    <span class="fee-info">(5% fee for quick trade)</span>
                 </p>
 
 
@@ -248,10 +328,11 @@
 
             <section class="dashboard-card side-card">
 
-                <h2>CREATE ORDER</h2>
+                <h2>CREATE USER ORDER</h2>
 
                 <p class="dashboard-description">
-                    Create a limit order at the price you choose.
+                    (No fee)
+                    
                 </p>
 
 
@@ -408,11 +489,102 @@
 
 
 
+<!-- ==============================================
+     EDIT ORDER POPUP
+================================================ -->
+
+<div id="editOrderModal" class="modal-overlay">
+    <div class="modal-card">
+
+        <h2>
+            EDIT ORDER #<span id="editOrderId">--</span>
+        </h2>
+
+        <p id="editOrderDetails">
+            Update the quantity or price for your open order.
+        </p>
+
+        <label for="editOrderQuantity">Quantity</label>
+        <input
+            id="editOrderQuantity"
+            type="number"
+            min="1"
+            placeholder="Quantity"
+        >
+
+        <label for="editOrderPrice">Price</label>
+        <input
+            id="editOrderPrice"
+            type="number"
+            min="0.01"
+            step="0.01"
+            placeholder="Price"
+        >
+
+        <p id="editOrderMessage" class="dashboard-message"></p>
+
+        <div class="modal-actions">
+            <button
+                id="cancelEditOrderButton"
+                class="modal-cancel-button"
+            >
+                CANCEL
+            </button>
+
+            <button
+                id="saveEditOrderButton"
+                class="order-edit-button"
+            >
+                SAVE CHANGES
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ==============================================
+     DELETE / CANCEL ORDER POPUP
+================================================ -->
+
+<div id="deleteOrderModal" class="modal-overlay">
+    <div class="modal-card">
+
+        <h2>
+            DELETE ORDER #<span id="deleteOrderId">--</span>?
+        </h2>
+
+        <p id="deleteOrderMessage">
+            Are you sure you want to cancel this open order?
+        </p>
+
+        <div class="modal-actions">
+            <button
+                id="keepOrderButton"
+                class="modal-cancel-button"
+            >
+                KEEP ORDER
+            </button>
+
+            <button
+                id="confirmDeleteOrderButton"
+                class="order-delete-button"
+            >
+                DELETE ORDER
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
 <script>
 
 /* =========================================================
    CURRENT USER
 ========================================================= */
+
+let currentUserId = null;
 
 async function loadCurrentUser() {
 
@@ -423,6 +595,9 @@ async function loadCurrentUser() {
 
         const user =
             await response.json();
+
+        currentUserId =
+            user.user_id;
 
 
         if (user.username) {
@@ -1133,28 +1308,24 @@ document
 
 async function loadOrders() {
 
-   
     const table =
         document.getElementById(
             "ordersTable"
         );
 
-
     table.innerHTML = `
         <tr>
-            <td colspan="7"
+            <td colspan="8"
                 class="table-state">
                 Loading open orders...
             </td>
         </tr>
     `;
 
-
     try {
 
         const response =
             await fetch("/orders");
-
 
         if (!response.ok) {
             throw new Error(
@@ -1162,19 +1333,16 @@ async function loadOrders() {
             );
         }
 
-
         const orders =
             await response.json();
 
-
         table.innerHTML = "";
-
 
         if (orders.length === 0) {
 
             table.innerHTML = `
                 <tr>
-                    <td colspan="7"
+                    <td colspan="8"
                         class="table-state">
                         No open player orders.
                     </td>
@@ -1184,7 +1352,6 @@ async function loadOrders() {
             return;
         }
 
-
         for (const order of orders) {
 
             const row =
@@ -1192,14 +1359,14 @@ async function loadOrders() {
                     "tr"
                 );
 
-
             const typeClass =
                 order.order_type === "BUY"
                     ? "positive-value"
                     : "negative-value";
 
-
             row.innerHTML = `
+                <td>#${order.order_id}</td>
+
                 <td>
                     ${order.username}
                 </td>
@@ -1226,16 +1393,92 @@ async function loadOrders() {
                     </span>
                 </td>
 
-                <td>
-                    <button
-                        class="accept-button"
-                        onclick="acceptOrder(${order.order_id})"
-                    >
-                        ACCEPT
-                    </button>
-                </td>
+                <td class="order-action-cell"></td>
             `;
 
+            const actionCell =
+                row.querySelector(
+                    ".order-action-cell"
+                );
+
+            const isMyOrder =
+                Number(order.user_id)
+                ===
+                Number(currentUserId);
+
+            if (isMyOrder) {
+
+                const editButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                editButton.className =
+                    "order-edit-button";
+
+                editButton.textContent =
+                    "EDIT";
+
+                editButton.addEventListener(
+                    "click",
+                    function () {
+                        openEditOrderModal(order);
+                    }
+                );
+
+
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                deleteButton.className =
+                    "order-delete-button";
+
+                deleteButton.textContent =
+                    "DELETE";
+
+                deleteButton.addEventListener(
+                    "click",
+                    function () {
+                        openDeleteOrderModal(order);
+                    }
+                );
+
+                actionCell.appendChild(
+                    editButton
+                );
+
+                actionCell.appendChild(
+                    deleteButton
+                );
+
+            } else {
+
+                const acceptButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                acceptButton.className =
+                    "accept-button";
+
+                acceptButton.textContent =
+                    "ACCEPT";
+
+                acceptButton.addEventListener(
+                    "click",
+                    function () {
+                        acceptOrder(
+                            order.order_id
+                        );
+                    }
+                );
+
+                actionCell.appendChild(
+                    acceptButton
+                );
+            }
 
             table.appendChild(row);
         }
@@ -1244,13 +1487,12 @@ async function loadOrders() {
 
         table.innerHTML = `
             <tr>
-                <td colspan="7"
+                <td colspan="8"
                     class="table-state table-error">
                     Open orders are currently unavailable.
                 </td>
             </tr>
         `;
-
 
         console.log(
             "Unable to load orders.",
@@ -1258,6 +1500,266 @@ async function loadOrders() {
         );
     }
 }
+
+
+
+/* =========================================================
+   EDIT OWN OPEN ORDER
+========================================================= */
+
+let activeEditOrderId = null;
+
+
+function openEditOrderModal(order) {
+
+    activeEditOrderId =
+        order.order_id;
+
+    document
+        .getElementById("editOrderId")
+        .textContent =
+        order.order_id;
+
+    document
+        .getElementById("editOrderDetails")
+        .textContent =
+        `${order.order_type} ${order.ticker} — update quantity or price.`;
+
+    document
+        .getElementById("editOrderQuantity")
+        .value =
+        order.quantity;
+
+    document
+        .getElementById("editOrderPrice")
+        .value =
+        order.price;
+
+    document
+        .getElementById("editOrderMessage")
+        .textContent =
+        "";
+
+    document
+        .getElementById("editOrderModal")
+        .classList.add("show");
+}
+
+
+function closeEditOrderModal() {
+
+    activeEditOrderId = null;
+
+    document
+        .getElementById("editOrderModal")
+        .classList.remove("show");
+}
+
+
+document
+    .getElementById("cancelEditOrderButton")
+    .addEventListener(
+        "click",
+        closeEditOrderModal
+    );
+
+
+document
+    .getElementById("saveEditOrderButton")
+    .addEventListener(
+        "click",
+        async function () {
+
+            if (!activeEditOrderId) {
+                return;
+            }
+
+            const quantity =
+                parseInt(
+                    document
+                        .getElementById(
+                            "editOrderQuantity"
+                        )
+                        .value
+                );
+
+            const price =
+                parseFloat(
+                    document
+                        .getElementById(
+                            "editOrderPrice"
+                        )
+                        .value
+                );
+
+            const message =
+                document
+                    .getElementById(
+                        "editOrderMessage"
+                    );
+
+            if (
+                !quantity ||
+                quantity <= 0 ||
+                !price ||
+                price <= 0
+            ) {
+
+                message.textContent =
+                    "Enter a valid quantity and price.";
+
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/orders/${activeEditOrderId}`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    quantity:
+                                        quantity,
+                                    price:
+                                        price
+                                })
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    message.textContent =
+                        data.error;
+
+                    return;
+                }
+
+                closeEditOrderModal();
+
+                await refreshDashboard();
+
+            } catch (error) {
+
+                message.textContent =
+                    "Order could not be updated.";
+
+                console.log(
+                    "Unable to update order.",
+                    error
+                );
+            }
+        }
+    );
+
+
+
+/* =========================================================
+   DELETE / CANCEL OWN OPEN ORDER
+========================================================= */
+
+let activeDeleteOrderId = null;
+
+
+function openDeleteOrderModal(order) {
+
+    activeDeleteOrderId =
+        order.order_id;
+
+    document
+        .getElementById("deleteOrderId")
+        .textContent =
+        order.order_id;
+
+    document
+        .getElementById("deleteOrderMessage")
+        .textContent =
+        `Cancel ${order.order_type} order #${order.order_id} for `
+        + `${order.quantity} share(s) of ${order.ticker} at `
+        + `$${order.price.toFixed(2)}?`;
+
+    document
+        .getElementById("deleteOrderModal")
+        .classList.add("show");
+}
+
+
+function closeDeleteOrderModal() {
+
+    activeDeleteOrderId = null;
+
+    document
+        .getElementById("deleteOrderModal")
+        .classList.remove("show");
+}
+
+
+document
+    .getElementById("keepOrderButton")
+    .addEventListener(
+        "click",
+        closeDeleteOrderModal
+    );
+
+
+document
+    .getElementById("confirmDeleteOrderButton")
+    .addEventListener(
+        "click",
+        async function () {
+
+            if (!activeDeleteOrderId) {
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/orders/${activeDeleteOrderId}`,
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    alert(data.error);
+
+                    return;
+                }
+
+                closeDeleteOrderModal();
+
+                await refreshDashboard();
+
+            } catch (error) {
+
+                alert(
+                    "Order could not be deleted."
+                );
+
+                console.log(
+                    "Unable to delete order.",
+                    error
+                );
+            }
+        }
+    );
+
 
 
 /* =========================================================
@@ -1579,6 +2081,277 @@ async function loadHistory() {
 
 
 /* =========================================================
+   LEADERBOARD
+========================================================= */
+
+async function loadLeaderboard() {
+
+    const table =
+        document.getElementById(
+            "marketLeaderboardTable"
+        );
+
+    table.innerHTML = `
+        <tr>
+            <td colspan="3"
+                class="table-state">
+                Loading leaderboard...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        const response =
+            await fetch(
+                "/leaderboard"
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Unable to load leaderboard"
+            );
+        }
+
+        const leaderboard =
+            await response.json();
+
+        table.innerHTML = "";
+
+        if (leaderboard.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="3"
+                        class="table-state">
+                        No traders found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        for (const player of leaderboard) {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+            row.innerHTML = `
+                <td>
+                    ${player.rank}
+                </td>
+
+                <td>
+                    ${player.username}
+                </td>
+
+                <td>
+                    $${player.total_portfolio_value.toFixed(2)}
+                </td>
+            `;
+
+            table.appendChild(row);
+        }
+
+    } catch (error) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="3"
+                    class="table-state table-error">
+                    Leaderboard is currently unavailable.
+                </td>
+            </tr>
+        `;
+
+        console.log(
+            "Unable to load leaderboard.",
+            error
+        );
+    }
+}
+
+
+
+/* =========================================================
+   1-MINUTE TRADING ROUND TIMER
+========================================================= */
+
+/*
+    BACKEND-SYNCHRONIZED TRADING ROUND TIMER.
+
+    The backend is the source of truth for:
+    - current round
+    - time remaining
+    - game status
+
+    The frontend only displays the game state.
+*/
+
+let currentRoundNumber = 1;
+let gameStatus = "PAUSED";
+let roundEndTime = null;
+let gameStateSyncInProgress = false;
+let lastKnownRound = null;
+
+
+function formatRoundTime(totalSeconds) {
+
+    totalSeconds = Math.max(
+        0,
+        Math.floor(totalSeconds)
+    );
+
+    const minutes = Math.floor(
+        totalSeconds / 60
+    );
+
+    const seconds = totalSeconds % 60;
+
+    return (
+        String(minutes).padStart(2, "0")
+        + ":"
+        + String(seconds).padStart(2, "0")
+    );
+}
+
+
+/* =========================================================
+   SYNCHRONIZE WITH BACKEND GAME STATE
+========================================================= */
+
+async function syncGameState() {
+
+    if (gameStateSyncInProgress) {
+        return;
+    }
+
+    gameStateSyncInProgress = true;
+
+    try {
+
+        const response = await fetch("/game");
+
+        if (!response.ok) {
+            throw new Error(
+                "Unable to load game state."
+            );
+        }
+
+        const data = await response.json();
+
+        const previousRound = lastKnownRound;
+
+        currentRoundNumber = data.current_round;
+        gameStatus = data.status;
+
+        document
+            .getElementById("roundNumber")
+            .textContent = currentRoundNumber;
+
+        if (gameStatus === "ACTIVE") {
+
+            roundEndTime =
+                Date.now()
+                + (Number(data.time_remaining) * 1000);
+
+            document
+                .getElementById("roundTimer")
+                .textContent =
+                formatRoundTime(data.time_remaining);
+
+        } else {
+
+            roundEndTime = null;
+
+            document
+                .getElementById("roundTimer")
+                .textContent =
+                formatRoundTime(data.time_remaining);
+        }
+
+        lastKnownRound = currentRoundNumber;
+
+        /*
+            If the backend advanced the round since our
+            previous synchronization, reload market data.
+        */
+        if (
+            previousRound !== null
+            && previousRound !== currentRoundNumber
+        ) {
+
+            await refreshDashboard();
+        }
+
+    } catch (error) {
+
+        console.log(
+            "Unable to synchronize game state.",
+            error
+        );
+
+    } finally {
+
+        gameStateSyncInProgress = false;
+    }
+}
+
+
+/* =========================================================
+   DISPLAY COUNTDOWN
+========================================================= */
+
+function updateRoundTimer() {
+
+    if (
+        gameStatus !== "ACTIVE"
+        || roundEndTime === null
+    ) {
+        return;
+    }
+
+    const millisecondsLeft =
+        roundEndTime - Date.now();
+
+    const secondsLeft = Math.max(
+        0,
+        Math.ceil(millisecondsLeft / 1000)
+    );
+
+    document
+        .getElementById("roundTimer")
+        .textContent =
+        formatRoundTime(secondsLeft);
+}
+
+
+/*
+    Smoothly update the visual countdown.
+*/
+setInterval(
+    updateRoundTimer,
+    250
+);
+
+
+/*
+    Synchronize with the backend every second.
+
+    This means the frontend does not assume that the game
+    is active, paused, or on a particular round.
+*/
+setInterval(
+    syncGameState,
+    1000
+);
+
+
+
+/* =========================================================
    REFRESH DASHBOARD
 ========================================================= */
 
@@ -1592,6 +2365,8 @@ async function refreshDashboard() {
 
     await loadHistory();
 
+    await loadLeaderboard();
+
 }
 
 
@@ -1599,6 +2374,7 @@ async function refreshDashboard() {
 /* =========================================================
    START PAGE
 ========================================================= */
+syncGameState();
 
 loadCurrentUser();
 

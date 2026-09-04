@@ -98,7 +98,11 @@ document.getElementById("loginForm").addEventListener(
 
         if (response.ok) {
 
-            window.location.href = "/market";
+            if (data.role === "Admin") {
+                window.location.href = "/admin-page";
+            } else {
+                window.location.href = "/market";
+            }
 
         } else {
 

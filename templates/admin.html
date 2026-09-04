@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SCP Market Admin</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="admin-body">
+
+
+<!-- =========================================================
+     ADMIN HEADER
+========================================================= -->
+
+<header class="admin-header">
+
+    <div class="admin-brand">
+        SCP MARKET — ADMIN
+    </div>
+
+    <div class="admin-user-area">
+
+        <span id="adminWelcome">
+            Welcome, Admin
+        </span>
+
+        <a href="/logout" class="admin-logout-button">
+            LOG OUT
+        </a>
+
+    </div>
+
+</header>
+
+
+<main class="admin-container">
+
+
+    <!-- =====================================================
+         GAME SUMMARY
+    ====================================================== -->
+
+    <section class="admin-summary-grid">
+
+        <div class="admin-summary-card">
+
+            <p>Current Round</p>
+
+            <h2 id="currentRound">
+                --
+            </h2>
+
+        </div>
+
+
+        <div class="admin-summary-card">
+
+            <p>Time Remaining</p>
+
+            <h2 id="timeRemaining">
+                01:00
+            </h2>
+
+        </div>
+
+
+        <div class="admin-summary-card">
+
+            <p>Game Status</p>
+
+            <h2 id="gameStatus">
+                --
+            </h2>
+
+        </div>
+
+
+        <div class="admin-summary-card">
+
+            <p>Starting Capital</p>
+
+            <h2 id="startingCapital">
+                $0.00
+            </h2>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         GAME CONTROL
+    ====================================================== -->
+
+    <section class="admin-card">
+
+        <h2>GAME CONTROL</h2>
+
+        <p class="admin-description">
+            Start the game, update game settings, or reset the simulation.
+        </p>
+
+
+        <div class="admin-grid-two">
+
+
+            <div>
+
+                <label for="roundInput">
+                    Current Round
+                </label>
+
+                <input
+                    id="roundInput"
+                    type="number"
+                    min="1"
+                    placeholder="Round number"
+                >
+
+
+                <label for="timeInput">
+                    Round Time (Seconds)
+                </label>
+
+                <input
+                    id="timeInput"
+                    type="number"
+                    min="1"
+                    value="60"
+                    placeholder="60"
+                >
+
+
+                <label for="statusInput">
+                    Game Status
+                </label>
+
+                <select id="statusInput">
+
+                    <option value="ACTIVE">
+                        ACTIVE
+                    </option>
+
+                    <option value="PAUSED">
+                        PAUSED
+                    </option>
+
+                    <option value="ENDED">
+                        ENDED
+                    </option>
+
+                </select>
+
+
+                <label for="capitalInput">
+                    Starting Capital
+                </label>
+
+                <input
+                    id="capitalInput"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Starting capital"
+                >
+
+            </div>
+
+
+            <div>
+
+                <button
+                    id="startGameButton"
+                    class="admin-primary-button"
+                >
+                    START GAME
+                </button>
+
+
+                <button
+                    id="updateGameButton"
+                    class="admin-secondary-button"
+                >
+                    UPDATE SETTINGS
+                </button>
+
+
+                <button
+                    id="resetGameButton"
+                    class="admin-danger-button"
+                >
+                    RESET GAME
+                </button>
+
+                <button
+                    id="hardResetGameButton"
+                    class="admin-hard-reset-button"
+                >
+                    HARD RESET
+                </button>
+
+                <p
+                    id="gameMessage"
+                    class="admin-message"
+                ></p>
+
+                <p class="admin-description">
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         MARKET MANAGEMENT
+    ====================================================== -->
+
+    <section class="admin-card">
+
+        <h2>MARKET MANAGEMENT</h2>
+
+        <p class="admin-description">
+            View, create, update, or remove stocks from the simulator.
+        </p>
+
+
+        <div class="admin-table-wrapper">
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>Ticker</th>
+                    <th>Company</th>
+                    <th>Price</th>
+                    <th>Total Supply</th>
+                    <th>Available Supply</th>
+                    <th>Action</th>
+                </tr>
+
+                </thead>
+
+
+                <tbody id="adminStockTable">
+
+                    <tr>
+                        <td colspan="6">
+                            Market data will appear here.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+
+        <h3>Add New Stock</h3>
+
+
+        <div class="admin-grid-two">
+
+            <div>
+
+                <label for="newTicker">
+                    Ticker
+                </label>
+
+                <input
+                    id="newTicker"
+                    type="text"
+                    placeholder="Example: AAPL"
+                >
+
+
+                <label for="newCompany">
+                    Company Name
+                </label>
+
+                <input
+                    id="newCompany"
+                    type="text"
+                    placeholder="Company name"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label for="newPrice">
+                    Current Price
+                </label>
+
+                <input
+                    id="newPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Price"
+                >
+
+
+                <label for="newSupply">
+                    Total Supply
+                </label>
+
+                <input
+                    id="newSupply"
+                    type="number"
+                    min="0"
+                    placeholder="Total supply"
+                >
+
+
+                <label for="newAvailableSupply">
+                    Available Supply
+                </label>
+
+                <input
+                    id="newAvailableSupply"
+                    type="number"
+                    min="0"
+                    placeholder="Available supply"
+                >
+
+            </div>
+
+        </div>
+
+
+        <button
+            id="createStockButton"
+            class="admin-primary-button"
+        >
+            + ADD STOCK
+        </button>
+
+
+        <p
+            id="stockMessage"
+            class="admin-message"
+        ></p>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         PLAYER MANAGEMENT
+    ====================================================== -->
+
+    <section class="admin-card">
+
+        <h2>PLAYER MANAGEMENT</h2>
+
+        <p class="admin-description">
+            View users and manage roles or cash balances.
+        </p>
+
+
+        <div class="admin-table-wrapper">
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Cash Balance</th>
+                    <th>Action</th>
+                </tr>
+
+                </thead>
+
+
+                <tbody id="adminUserTable">
+
+                    <tr>
+                        <td colspan="5">
+                            User data will appear here.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================================================
+         LEADERBOARD
+    ========================================================== -->
+
+    <section class="admin-card">
+
+        <h2>LEADERBOARD</h2>
+
+        <p class="admin-description">
+            Players ranked by total portfolio value.
+        </p>
+
+        <div class="admin-table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Username</th>
+                        <th>Cash</th>
+                        <th>Holdings Value</th>
+                        <th>Total Portfolio Value</th>
+                    </tr>
+                </thead>
+
+                <tbody id="leaderboardTable">
+
+                    <tr>
+                        <td colspan="5">
+                            Leaderboard data will appear here.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         PORTFOLIOS + ORDERS
+    ====================================================== -->
+
+    <section class="admin-grid-two">
+
+
+        <!-- PORTFOLIOS -->
+
+        <section class="admin-card">
+
+            <h2>PLAYER PORTFOLIOS</h2>
+
+            <p class="admin-description">
+                View stock holdings for all players.
+            </p>
+
+
+            <div class="admin-table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                    <tr>
+                        <th>User ID</th>
+                        <th>Stock ID</th>
+                        <th>Quantity</th>
+                        <th>Avg. Buy Price</th>
+                    </tr>
+
+                    </thead>
+
+
+                    <tbody id="adminPortfolioTable">
+
+                        <tr>
+                            <td colspan="4">
+                                Portfolio data will appear here.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+
+
+        <!-- ORDERS -->
+
+        <section class="admin-card">
+
+            <h2>ORDER ACTIVITY</h2>
+
+            <p class="admin-description">
+                View orders created during the simulation.
+            </p>
+
+
+            <div class="admin-table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                    <tr>
+                        <th>Order</th>
+                        <th>User</th>
+                        <th>Stock</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                    </tr>
+
+                    </thead>
+
+
+                    <tbody id="adminOrderTable">
+
+                        <tr>
+                            <td colspan="6">
+                                Order data will appear here.
+                            </td>
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+                <button id="adminOrderToggleButton" class="admin-secondary-button" style="display: none;">SHOW ALL</button>
+
+            </div>
+
+        </section>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         COMPLETED TRADES
+    ====================================================== -->
+
+    <section class="admin-card">
+
+        <h2>COMPLETED TRADES</h2>
+
+        <p class="admin-description">
+            Review successfully executed trades.
+        </p>
+
+
+        <div class="admin-table-wrapper">
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>Trade ID</th>
+                    <th>User ID</th>
+                    <th>Stock ID</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+
+                </thead>
+
+
+                <tbody id="adminTradeTable">
+
+                    <tr>
+                        <td colspan="7">
+                            Completed trades will appear here.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         AUDIT LOG
+    ====================================================== -->
+
+    <section class="admin-card">
+
+        <h2>AUDIT LOG</h2>
+
+        <p class="admin-description">
+            Review important actions recorded by the simulator.
+        </p>
+
+
+        <div class="admin-table-wrapper">
+
+            <table>
+
+                <thead>
+
+                <tr>
+                    <th>Time</th>
+                    <th>User ID</th>
+                    <th>Action</th>
+                    <th>Details</th>
+                </tr>
+
+                </thead>
+
+
+                <tbody id="adminAuditTable">
+
+                    <tr>
+                        <td colspan="4">
+                            Audit activity will appear here.
+                        </td>
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+            <button id="adminAuditToggleButton" class="admin-secondary-button" style="display: none;">SHOW ALL</button>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<script>
+
+/*
+    The backend is the source of truth for the Admin game controls.
+
+    Backend endpoints:
+
+    GET  /admin/game
+    POST /admin/game/start
+    PUT  /admin/game/settings
+    POST /admin/game/reset
+    POST /admin/game/hard-reset
+
+    The frontend displays the backend state and sends
+    Admin actions to these endpoints.
+*/
+
+
+/* =========================================================
+   ADMIN GAME STATE
+========================================================= */
+
+let adminRoundEndTime = null;
+let adminGameStatus = "PAUSED";
+let adminAuditData = [];
+let adminAuditExpanded = false;
+let adminGameSyncInProgress = false;
+let adminOrdersData = [];
+let adminOrdersExpanded = false;
+
+
+/* =========================================================
+   FORMAT TIME
+========================================================= */
+
+function formatAdminTime(totalSeconds) {
+
+    totalSeconds = Math.max(
+        0,
+        Math.floor(totalSeconds)
+    );
+
+    const minutes =
+        Math.floor(totalSeconds / 60);
+
+    const seconds =
+        totalSeconds % 60;
+
+    return (
+        String(minutes).padStart(2, "0")
+        + ":"
+        + String(seconds).padStart(2, "0")
+    );
+}
+
+
+/* =========================================================
+   DISPLAY GAME STATE
+========================================================= */
+
+function displayAdminGameState(data, updateInputs = true) {
+
+    document
+        .getElementById("currentRound")
+        .textContent =
+        data.current_round;
+
+    document
+        .getElementById("timeRemaining")
+        .textContent =
+        formatAdminTime(
+            data.time_remaining
+        );
+
+    document
+        .getElementById("gameStatus")
+        .textContent =
+        data.status;
+
+    document
+        .getElementById("startingCapital")
+        .textContent =
+        "$" +
+        Number(data.starting_capital)
+            .toFixed(2);
+
+    /*
+       Only update the form inputs when requested.
+       This prevents the 1-second backend sync from
+       overwriting values while the Admin is editing.
+    */
+    if (updateInputs) {
+
+        document
+            .getElementById("roundInput")
+            .value =
+            data.current_round;
+
+        document
+            .getElementById("timeInput")
+            .value =
+            data.time_remaining;
+
+        document
+            .getElementById("statusInput")
+            .value =
+            data.status;
+
+        document
+            .getElementById("capitalInput")
+            .value =
+            data.starting_capital;
+    }
+
+    adminGameStatus =
+        data.status;
+
+    if (adminGameStatus === "ACTIVE") {
+
+        adminRoundEndTime =
+            Date.now()
+            + (
+                Number(data.time_remaining)
+                * 1000
+            );
+
+    } else {
+
+        adminRoundEndTime = null;
+    }
+}
+
+
+/* =========================================================
+   LOAD CURRENT GAME STATE
+========================================================= */
+
+async function loadAdminGameState() {
+
+    if (adminGameSyncInProgress) {
+        return;
+    }
+
+    adminGameSyncInProgress = true;
+
+    try {
+
+        const response =
+            await fetch("/admin/game");
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to load game state."
+            );
+        }
+
+        displayAdminGameState(data, false);
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load Admin game state:",
+            error
+        );
+
+        document
+            .getElementById("gameMessage")
+            .textContent =
+            error.message;
+
+    } finally {
+
+        adminGameSyncInProgress = false;
+    }
+}
+
+
+/* =========================================================
+   VISUAL TIMER
+========================================================= */
+
+/*
+    This timer only updates what the Admin sees.
+
+    It does NOT control the game or change the
+    database. The backend game timer remains
+    responsible for actually advancing rounds.
+*/
+
+function updateAdminTimerDisplay() {
+
+    if (
+        adminGameStatus !== "ACTIVE"
+        || adminRoundEndTime === null
+    ) {
+        return;
+    }
+
+    const millisecondsLeft =
+        adminRoundEndTime -
+        Date.now();
+
+    const secondsLeft =
+        Math.max(
+            0,
+            Math.ceil(
+                millisecondsLeft / 1000
+            )
+        );
+
+    document
+        .getElementById("timeRemaining")
+        .textContent =
+        formatAdminTime(
+            secondsLeft
+        );
+}
+
+
+/*
+    Smooth visual countdown.
+*/
+
+setInterval(
+    updateAdminTimerDisplay,
+    250
+);
+
+
+/*
+    Synchronize with the backend once per second.
+*/
+
+setInterval(
+    loadAdminGameState,
+    1000
+);
+
+
+/* =========================================================
+   MARKET MANAGEMENT
+========================================================= */
+
+async function loadAdminStocks() {
+
+    const table =
+        document.getElementById("adminStockTable");
+
+    table.innerHTML = `
+        <tr>
+            <td colspan="6">
+                Loading market data...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        const response =
+            await fetch("/admin/stocks");
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to load stocks."
+            );
+        }
+
+        const stocks = data;
+
+        table.innerHTML = "";
+
+        if (!stocks || stocks.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="6">
+                        No stocks currently exist.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        stocks.forEach(stock => {
+
+            const row =
+                document.createElement("tr");
+
+            row.innerHTML = `
+                <td>${stock.ticker}</td>
+
+                <td>${stock.company_name}</td>
+
+                <td>
+                    <input
+                        id="price-${stock.id}"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value="${stock.current_price}"
+                        disabled
+                    >
+                </td>
+
+                <td>
+                    <input
+                        id="supply-${stock.id}"
+                        type="number"
+                        min="0"
+                        value="${stock.total_supply}"
+                        disabled
+                    >
+                </td>
+
+                <td>
+                    <input
+                        id="available-${stock.id}"
+                        type="number"
+                        min="0"
+                        value="${stock.available_supply}"
+                        disabled
+                    >
+                </td>
+
+                <td>
+                    <span>
+                        ${Number(stock.volatility).toFixed(4)}
+                    </span>
+
+                    <br>
+
+                    <button
+                        type="button"
+                        class="admin-stock-action-button admin-stock-edit-button"
+                        onclick="editAdminStock(${stock.id})"
+                    >
+                        EDIT
+                    </button>
+
+                    <button
+                        type="button"
+                        class="admin-stock-action-button admin-stock-delete-button"
+                        onclick="deleteAdminStock(${stock.id}, '${stock.ticker}')"
+                    >
+                        DELETE
+                    </button>
+                </td>
+            `;
+
+            table.appendChild(row);
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load stocks:",
+            error
+        );
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="6">
+                    Unable to load market data.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+
+async function createAdminStock() {
+
+    const message =
+        document.getElementById("stockMessage");
+
+    const ticker =
+        document
+            .getElementById("newTicker")
+            .value
+            .trim()
+            .toUpperCase();
+
+    const companyName =
+        document
+            .getElementById("newCompany")
+            .value
+            .trim();
+
+    const currentPrice =
+        parseFloat(
+            document
+                .getElementById("newPrice")
+                .value
+        );
+
+    const totalSupply =
+        parseInt(
+            document
+                .getElementById("newSupply")
+                .value
+        );
+
+    const availableSupply =
+        parseInt(
+            document
+                .getElementById("newAvailableSupply")
+                .value
+        );
+
+
+    if (!ticker || !companyName) {
+
+        message.textContent =
+            "Ticker and company name are required.";
+
+        return;
+    }
+
+
+    if (
+        Number.isNaN(currentPrice)
+        || currentPrice < 0
+    ) {
+
+        message.textContent =
+            "Current price must be 0 or greater.";
+
+        return;
+    }
+
+
+    if (
+        Number.isNaN(totalSupply)
+        || totalSupply < 0
+    ) {
+
+        message.textContent =
+            "Total supply must be 0 or greater.";
+
+        return;
+    }
+
+
+    if (
+        Number.isNaN(availableSupply)
+        || availableSupply < 0
+        || availableSupply > totalSupply
+    ) {
+
+        message.textContent =
+            "Available supply must be between 0 and total supply.";
+
+        return;
+    }
+
+
+    message.textContent =
+        "Adding stock...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/admin/stocks",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        ticker: ticker,
+                        company_name: companyName,
+                        current_price: currentPrice,
+                        total_supply: totalSupply,
+                        available_supply: availableSupply
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to create stock."
+            );
+        }
+
+
+        message.textContent =
+            data.message ||
+            "Stock created successfully.";
+
+
+        document
+            .getElementById("newTicker")
+            .value = "";
+
+        document
+            .getElementById("newCompany")
+            .value = "";
+
+        document
+            .getElementById("newPrice")
+            .value = "";
+
+        document
+            .getElementById("newSupply")
+            .value = "";
+
+        document
+            .getElementById("newAvailableSupply")
+            .value = "";
+
+
+        await loadAdminStocks();
+
+    } catch (error) {
+
+        console.error(
+            "Unable to create stock:",
+            error
+        );
+
+        message.textContent =
+            error.message;
+    }
+}
+
+
+function editAdminStock(stockId) {
+
+    const priceInput =
+        document.getElementById(
+            `price-${stockId}`
+        );
+
+    const supplyInput =
+        document.getElementById(
+            `supply-${stockId}`
+        );
+
+    const availableInput =
+        document.getElementById(
+            `available-${stockId}`
+        );
+
+
+    if (!priceInput || !supplyInput || !availableInput) {
+        return;
+    }
+
+
+    const currentlyEditing =
+        !priceInput.disabled;
+
+
+    if (currentlyEditing) {
+
+        updateAdminStock(stockId);
+
+        return;
+    }
+
+
+    priceInput.disabled = false;
+    supplyInput.disabled = false;
+    availableInput.disabled = false;
+
+
+    priceInput.focus();
+}
+
+
+async function updateAdminStock(stockId) {
+
+    const message =
+        document.getElementById("stockMessage");
+
+
+    const currentPrice =
+        parseFloat(
+            document.getElementById(
+                `price-${stockId}`
+            ).value
+        );
+
+
+    const totalSupply =
+        parseInt(
+            document.getElementById(
+                `supply-${stockId}`
+            ).value
+        );
+
+
+    const availableSupply =
+        parseInt(
+            document.getElementById(
+                `available-${stockId}`
+            ).value
+        );
+
+
+    if (
+        Number.isNaN(currentPrice)
+        || currentPrice < 0
+    ) {
+
+        message.textContent =
+            "Current price must be 0 or greater.";
+
+        return;
+    }
+
+
+    if (
+        Number.isNaN(totalSupply)
+        || totalSupply < 0
+    ) {
+
+        message.textContent =
+            "Total supply must be 0 or greater.";
+
+        return;
+    }
+
+
+    if (
+        Number.isNaN(availableSupply)
+        || availableSupply < 0
+        || availableSupply > totalSupply
+    ) {
+
+        message.textContent =
+            "Available supply must be between 0 and total supply.";
+
+        return;
+    }
+
+
+    message.textContent =
+        "Updating stock...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/admin/stocks/${stockId}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        current_price: currentPrice,
+                        total_supply: totalSupply,
+                        available_supply: availableSupply
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to update stock."
+            );
+        }
+
+
+        message.textContent =
+            data.message ||
+            "Stock updated successfully.";
+
+
+        await loadAdminStocks();
+
+    } catch (error) {
+
+        console.error(
+            "Unable to update stock:",
+            error
+        );
+
+        message.textContent =
+            error.message;
+    }
+}
+
+
+async function deleteAdminStock(stockId, ticker) {
+
+    const confirmed =
+        confirm(
+            `Are you sure you want to delete ${ticker}?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const message =
+        document.getElementById("stockMessage");
+
+
+    message.textContent =
+        "Deleting stock...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/admin/stocks/${stockId}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to delete stock."
+            );
+        }
+
+
+        message.textContent =
+            data.message ||
+            "Stock deleted successfully.";
+
+
+        await loadAdminStocks();
+
+    } catch (error) {
+
+        console.error(
+            "Unable to delete stock:",
+            error
+        );
+
+        message.textContent =
+            error.message;
+    }
+}
+
+
+/* =========================================================
+   START GAME
+========================================================= */
+
+async function startAdminGame() {
+
+    const message =
+        document
+            .getElementById("gameMessage");
+
+    message.textContent =
+        "Starting game...";
+
+    try {
+
+        const response =
+            await fetch(
+                "/admin/game/start",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    }
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to start game."
+            );
+        }
+
+        displayAdminGameState(data);
+
+        message.textContent =
+            data.message;
+
+    } catch (error) {
+
+        console.error(
+            "Unable to start game:",
+            error
+        );
+
+        message.textContent =
+            error.message;
+    }
+}
+
+
+/* =========================================================
+   UPDATE GAME SETTINGS
+========================================================= */
+
+async function applyAdminSettings() {
+
+    const roundValue =
+        parseInt(
+            document
+                .getElementById("roundInput")
+                .value
+        );
+
+    const timeValue =
+        parseInt(
+            document
+                .getElementById("timeInput")
+                .value
+        );
+
+    const statusValue =
+        document
+            .getElementById("statusInput")
+            .value;
+
+    const capitalValue =
+        parseFloat(
+            document
+                .getElementById("capitalInput")
+                .value
+        );
+
+
+    if (
+        Number.isNaN(roundValue)
+        || roundValue < 1
+    ) {
+
+        document
+            .getElementById("gameMessage")
+            .textContent =
+            "Current round must be at least 1.";
+
+        return;
+    }
+
+
+    if (
+        Number.isNaN(timeValue)
+        || timeValue < 0
+    ) {
+
+        document
+            .getElementById("gameMessage")
+            .textContent =
+            "Time remaining cannot be negative.";
+
+        return;
+    }
+
+
+    if (
+        Number.isNaN(capitalValue)
+        || capitalValue < 0
+    ) {
+
+        document
+            .getElementById("gameMessage")
+            .textContent =
+            "Starting capital cannot be negative.";
+
+        return;
+    }
+
+
+    const message =
+        document
+            .getElementById("gameMessage");
+
+    message.textContent =
+        "Updating game settings...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/admin/game/settings",
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        current_round:
+                            roundValue,
+
+                        time_remaining:
+                            timeValue,
+
+                        status:
+                            statusValue,
+
+                        starting_capital:
+                            capitalValue
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to update game settings."
+            );
+        }
+
+
+        displayAdminGameState(data);
+
+
+        message.textContent =
+            data.message;
+
+
+    } catch (error) {
+
+        console.error(
+            "Unable to update game settings:",
+            error
+        );
+
+        message.textContent =
+            error.message;
+    }
+}
+
+
+/* =========================================================
+   RESET GAME
+========================================================= */
+
+async function hardResetAdminGame() {
+    const firstConfirm = confirm(
+        "⚠️ WARNING: HARD RESET ⚠️\n\n" +
+        "This will permanently reset the entire game to the canonical starting state.\n\n" +
+        "All player portfolios, orders, balances, and game progress will be reset.\n\n" +
+        "Are you absolutely sure?"
+    );
+
+    if (!firstConfirm) {
+        return;
+    }
+
+    const confirmation = prompt(
+        "FINAL WARNING\n\n" +
+        "Type HARD RESET exactly to confirm this action:"
+    );
+
+    if (confirmation !== "HARD RESET") {
+        alert("Hard reset cancelled. Nothing was changed.");
+        return;
+    }
+
+    const button = document.getElementById("hardResetGameButton");
+    button.disabled = true;
+    button.textContent = "RESETTING...";
+
+    try {
+        const response = await fetch(
+            "/admin/game/hard-reset",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    confirmed: true
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.message || "Unable to perform hard reset."
+            );
+        }
+
+        alert(
+            data.message ||
+            "Hard reset completed successfully. Please log in again."
+        );
+
+        window.location.href = "/app";
+        return;
+
+    } catch (error) {
+        console.error("Unable to perform hard reset:", error);
+
+        document.getElementById("gameMessage").textContent =
+            error.message || "Unable to perform hard reset.";
+
+    } finally {
+        button.disabled = false;
+        button.textContent = "HARD RESET";
+    }
+}
+
+
+async function resetAdminGame() {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to reset the game?\n\n"
+            + "This will clear all orders and portfolios "
+            + "and return users to the current starting capital."
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    const message =
+        document
+            .getElementById("gameMessage");
+
+    message.textContent =
+        "Resetting game...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/admin/game/reset",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        confirmed: true
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                data.error ||
+                "Unable to reset game."
+            );
+        }
+
+
+        message.textContent =
+            data.message;
+
+
+        await loadAdminGameState();
+
+
+    } catch (error) {
+
+        console.error(
+            "Unable to reset game:",
+            error
+        );
+
+        message.textContent =
+            error.message;
+    }
+}
+
+
+/* =========================================================
+   BUTTON EVENT LISTENERS
+========================================================= */
+
+document
+    .getElementById("startGameButton")
+    .addEventListener(
+        "click",
+        startAdminGame
+    );
+
+
+document
+    .getElementById("updateGameButton")
+    .addEventListener(
+        "click",
+        applyAdminSettings
+    );
+
+
+document
+    .getElementById("resetGameButton")
+    .addEventListener(
+        "click",
+        resetAdminGame
+    );
+
+document
+    .getElementById("hardResetGameButton")
+    .addEventListener(
+        "click",
+        hardResetAdminGame
+    );
+
+
+/* =========================================================
+   INITIAL GAME STATE
+========================================================= */
+
+loadAdminGameState();
+
+
+/* =========================================================
+   ADMIN USERNAME
+========================================================= */
+
+async function loadAdminName() {
+
+    try {
+
+        const response =
+            await fetch("/me");
+
+        const user =
+            await response.json();
+
+
+        if (user.username) {
+
+            document
+                .getElementById("adminWelcome")
+                .textContent =
+                "Welcome, " + user.username;
+
+        }
+
+    } catch (error) {
+
+        console.log(
+            "Unable to load admin username."
+        );
+
+    }
+
+}
+
+
+loadAdminName();
+
+
+/* =========================================================
+   MARKET MANAGEMENT INITIALIZATION
+========================================================= */
+
+document
+    .getElementById("createStockButton")
+    .addEventListener(
+        "click",
+        createAdminStock
+    );
+
+
+loadAdminStocks();
+
+
+/* =========================================================
+   LEADERBOARD
+========================================================= */
+
+
+async function loadAdminUsers() {
+    const table = document.getElementById("adminUserTable");
+    table.innerHTML = '<tr><td colspan="5">Loading users...</td></tr>';
+
+    try {
+        const response = await fetch("/admin/users");
+        const users = await response.json();
+
+        if (!response.ok) {
+            throw new Error(users.error || "Unable to load users.");
+        }
+
+        table.innerHTML = "";
+
+        if (!users || users.length === 0) {
+            table.innerHTML = '<tr><td colspan="5">No users found.</td></tr>';
+            return;
+        }
+
+        users.forEach(user => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${user.id}</td>
+                <td>${user.username}</td>
+                <td>${user.role}</td>
+                <td>$${Number(user.cash_balance).toFixed(2)}</td>
+                <td>—</td>
+            `;
+            table.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Unable to load users:", error);
+        table.innerHTML =
+            '<tr><td colspan="5">Player data is currently unavailable.</td></tr>';
+    }
+}
+
+
+async function loadAdminPortfolios() {
+    const table = document.getElementById("adminPortfolioTable");
+    table.innerHTML = '<tr><td colspan="4">Loading portfolios...</td></tr>';
+
+    try {
+        const response = await fetch("/admin/portfolios");
+        const portfolios = await response.json();
+
+        if (!response.ok) {
+            throw new Error(portfolios.error || "Unable to load portfolios.");
+        }
+
+        table.innerHTML = "";
+
+        if (!portfolios || portfolios.length === 0) {
+            table.innerHTML =
+                '<tr><td colspan="4">No portfolio holdings found.</td></tr>';
+            return;
+        }
+
+        portfolios.forEach(portfolio => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${portfolio.user_id}</td>
+                <td>${portfolio.stock_id}</td>
+                <td>${portfolio.quantity}</td>
+                <td>$${Number(portfolio.avg_buy_price).toFixed(2)}</td>
+            `;
+            table.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Unable to load portfolios:", error);
+        table.innerHTML =
+            '<tr><td colspan="4">Portfolio data is currently unavailable.</td></tr>';
+    }
+}
+
+
+async function loadAdminOrders() {
+    const table = document.getElementById("adminOrderTable");
+    const toggleButton = document.getElementById("adminOrderToggleButton");
+
+    table.innerHTML = '<tr><td colspan="6">Loading orders...</td></tr>';
+
+    try {
+        const response = await fetch("/admin/orders");
+        const orders = await response.json();
+
+        if (!response.ok) {
+            throw new Error(orders.error || "Unable to load orders.");
+        }
+
+        if (!orders || orders.length === 0) {
+            table.innerHTML = '<tr><td colspan="6">No orders found.</td></tr>';
+            toggleButton.style.display = "none";
+            return;
+        }
+
+        const sortedOrders = [...orders].sort((a, b) => {
+            const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+            const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+
+            if (timeB !== timeA) {
+                return timeB - timeA;
+            }
+
+            return Number(b.id) - Number(a.id);
+        });
+
+        adminOrdersData = sortedOrders;
+        adminOrdersExpanded = false;
+
+        renderAdminOrders();
+
+    } catch (error) {
+        console.error("Unable to load orders:", error);
+        table.innerHTML =
+            '<tr><td colspan="6">Order data is currently unavailable.</td></tr>';
+        toggleButton.style.display = "none";
+    }
+}
+
+function renderAdminOrders() {
+    const table = document.getElementById("adminOrderTable");
+    const toggleButton = document.getElementById("adminOrderToggleButton");
+
+    table.innerHTML = "";
+
+    const displayedOrders = adminOrdersExpanded
+        ? adminOrdersData
+        : adminOrdersData.slice(0, 10);
+
+    displayedOrders.forEach(order => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${order.id}</td>
+            <td>${order.user_id}</td>
+            <td>${order.stock_id}</td>
+            <td>${order.quantity}</td>
+            <td>$${Number(order.price).toFixed(2)}</td>
+            <td>${order.status}</td>
+        `;
+        table.appendChild(row);
+    });
+
+    if (adminOrdersData.length > 10) {
+        toggleButton.style.display = "inline-block";
+        toggleButton.textContent =
+            adminOrdersExpanded ? "SHOW LESS" : "SHOW ALL";
+    } else {
+        toggleButton.style.display = "none";
+    }
+}
+
+
+async function loadAdminTrades() {
+    const table = document.getElementById("adminTradeTable");
+    table.innerHTML = '<tr><td colspan="7">Loading completed trades...</td></tr>';
+
+    try {
+        const response = await fetch("/admin/trades");
+        const trades = await response.json();
+
+        if (!response.ok) {
+            throw new Error(trades.error || "Unable to load completed trades.");
+        }
+
+        table.innerHTML = "";
+
+        if (!trades || trades.length === 0) {
+            table.innerHTML =
+                '<tr><td colspan="7">No completed trades found.</td></tr>';
+            return;
+        }
+
+        trades.forEach(trade => {
+            const row = document.createElement("tr");
+            const tradeDate = trade.created_at
+                ? new Date(trade.created_at).toLocaleString()
+                : "—";
+
+            row.innerHTML = `
+                <td>${trade.id}</td>
+                <td>${trade.user_id}</td>
+                <td>${trade.stock_id}</td>
+                <td>${trade.quantity}</td>
+                <td>$${Number(trade.price).toFixed(2)}</td>
+                <td>${trade.status}</td>
+                <td>${tradeDate}</td>
+            `;
+
+            table.appendChild(row);
+        });
+    } catch (error) {
+        console.error("Unable to load completed trades:", error);
+        table.innerHTML =
+            '<tr><td colspan="7">Completed trade data is currently unavailable.</td></tr>';
+    }
+}
+
+
+async function loadAdminAuditLogs() {
+    const table = document.getElementById("adminAuditTable");
+    const toggleButton = document.getElementById("adminAuditToggleButton");
+
+    table.innerHTML = '<tr><td colspan="4">Loading audit log...</td></tr>';
+
+    try {
+        const response = await fetch("/admin/audit-logs");
+        const logs = await response.json();
+
+        if (!response.ok) {
+            throw new Error(logs.error || "Unable to load audit logs.");
+        }
+
+        if (!logs || logs.length === 0) {
+            table.innerHTML =
+                '<tr><td colspan="4">No audit activity found.</td></tr>';
+            toggleButton.style.display = "none";
+            return;
+        }
+
+        const sortedLogs = [...logs].sort((a, b) => {
+            const timeA = a.timestamp
+                ? new Date(a.timestamp).getTime()
+                : 0;
+            const timeB = b.timestamp
+                ? new Date(b.timestamp).getTime()
+                : 0;
+
+            if (timeB !== timeA) {
+                return timeB - timeA;
+            }
+
+            return Number(b.id) - Number(a.id);
+        });
+
+        adminAuditData = sortedLogs;
+        adminAuditExpanded = false;
+
+        renderAdminAuditLogs();
+
+    } catch (error) {
+        console.error("Unable to load audit logs:", error);
+        table.innerHTML =
+            '<tr><td colspan="4">Audit log is currently unavailable.</td></tr>';
+        toggleButton.style.display = "none";
+    }
+}
+
+function renderAdminAuditLogs() {
+    const table = document.getElementById("adminAuditTable");
+    const toggleButton = document.getElementById("adminAuditToggleButton");
+
+    table.innerHTML = "";
+
+    const displayedLogs = adminAuditExpanded
+        ? adminAuditData
+        : adminAuditData.slice(0, 10);
+
+    displayedLogs.forEach(log => {
+        const row = document.createElement("tr");
+        const logTime = log.timestamp
+            ? new Date(log.timestamp).toLocaleString()
+            : "—";
+
+        row.innerHTML = `
+            <td>${logTime}</td>
+            <td>${log.user_id ?? "—"}</td>
+            <td>${log.action}</td>
+            <td>${log.details ?? "—"}</td>
+        `;
+
+        table.appendChild(row);
+    });
+
+    if (adminAuditData.length > 10) {
+        toggleButton.style.display = "inline-block";
+        toggleButton.textContent =
+            adminAuditExpanded ? "SHOW LESS" : "SHOW ALL";
+    } else {
+        toggleButton.style.display = "none";
+    }
+}
+
+
+async function loadLeaderboard() {
+
+    const table =
+        document.getElementById(
+            "leaderboardTable"
+        );
+
+    table.innerHTML = `
+        <tr>
+            <td colspan="5">
+                Loading leaderboard...
+            </td>
+        </tr>
+    `;
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/admin/leaderboard"
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Unable to load leaderboard"
+            );
+        }
+
+
+        const leaderboard =
+            await response.json();
+
+
+        table.innerHTML = "";
+
+
+        if (leaderboard.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        No traders found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+
+        for (const player of leaderboard) {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            row.innerHTML = `
+                <td>${player.rank}</td>
+                <td>${player.username}</td>
+                <td>$${Number(player.cash_balance).toFixed(2)}</td>
+                <td>$${Number(player.holdings_value).toFixed(2)}</td>
+                <td>$${Number(player.total_portfolio_value).toFixed(2)}</td>
+            `;
+
+
+            table.appendChild(row);
+        }
+
+
+    } catch (error) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    Leaderboard is currently unavailable.
+                </td>
+            </tr>
+        `;
+
+
+        console.log(
+            "Unable to load leaderboard.",
+            error
+        );
+    }
+}
+
+
+document.getElementById("adminOrderToggleButton").addEventListener("click", () => {
+    adminOrdersExpanded = !adminOrdersExpanded;
+    renderAdminOrders();
+});
+document.getElementById("adminAuditToggleButton").addEventListener("click", () => {
+    adminAuditExpanded = !adminAuditExpanded;
+    renderAdminAuditLogs();
+});
+
+loadAdminUsers();
+loadAdminPortfolios();
+loadAdminOrders();
+loadAdminTrades();
+loadAdminAuditLogs();
+
+loadLeaderboard();
+
+</script>
+
+
+</body>
+</html>
