@@ -64,7 +64,7 @@
             <p>Time Remaining</p>
 
             <h2 id="timeRemaining">
-                --
+                01:00
             </h2>
 
         </div>
@@ -126,14 +126,15 @@
 
 
                 <label for="timeInput">
-                    Time Remaining
+                    Round Time (Seconds)
                 </label>
 
                 <input
                     id="timeInput"
                     type="number"
-                    min="0"
-                    placeholder="Time remaining"
+                    min="1"
+                    value="60"
+                    placeholder="60"
                 >
 
 
@@ -202,6 +203,11 @@
                     id="gameMessage"
                     class="admin-message"
                 ></p>
+
+                <p class="admin-description">
+                    Frontend timer demo for now. This can later connect
+                    to the backend game state so all users share the same timer.
+                </p>
 
             </div>
 
@@ -616,6 +622,372 @@
     The buttons can later call the POST / PUT /
     DELETE routes your partner already created.
 */
+
+/* =========================================================
+   FRONTEND ADMIN ROUND TIMER
+========================================================= */
+
+/*
+    FRONTEND-ONLY FOR NOW.
+
+    Default round length: 60 seconds.
+
+    START GAME:
+        Starts or resumes the countdown.
+
+    UPDATE SETTINGS:
+        Applies the Current Round, Round Time, Game Status,
+        and Starting Capital values entered by the admin.
+
+    RESET GAME:
+        Returns the demo to Round 1, 01:00, PAUSED.
+
+    When the timer reaches 00:00:
+        - the round number increases
+        - the timer automatically restarts
+
+    Later, this can be connected to /admin/game so the
+    backend becomes the source of truth for the round timer.
+*/
+
+const DEFAULT_ROUND_SECONDS = 60;
+
+let adminRoundNumber = 1;
+let adminRoundSeconds = DEFAULT_ROUND_SECONDS;
+let adminSecondsRemaining = DEFAULT_ROUND_SECONDS;
+let adminTimerInterval = null;
+let adminTimerRunning = false;
+
+
+function formatAdminTime(totalSeconds) {
+
+    const minutes =
+        Math.floor(totalSeconds / 60);
+
+    const seconds =
+        totalSeconds % 60;
+
+    return (
+        String(minutes).padStart(2, "0")
+        + ":"
+        + String(seconds).padStart(2, "0")
+    );
+}
+
+
+function updateAdminTimerDisplay() {
+
+    document
+        .getElementById("timeRemaining")
+        .textContent =
+        formatAdminTime(
+            adminSecondsRemaining
+        );
+
+    document
+        .getElementById("currentRound")
+        .textContent =
+        adminRoundNumber;
+
+    if (adminTimerRunning) {
+
+        document
+            .getElementById("gameStatus")
+            .textContent =
+            "ACTIVE";
+    }
+}
+
+
+function stopAdminTimer() {
+
+    if (adminTimerInterval) {
+
+        clearInterval(
+            adminTimerInterval
+        );
+
+        adminTimerInterval = null;
+    }
+
+    adminTimerRunning = false;
+}
+
+
+function startAdminTimer() {
+
+    if (adminTimerRunning) {
+        return;
+    }
+
+    adminTimerRunning = true;
+
+    document
+        .getElementById("statusInput")
+        .value =
+        "ACTIVE";
+
+    document
+        .getElementById("gameStatus")
+        .textContent =
+        "ACTIVE";
+
+    adminTimerInterval =
+        setInterval(
+            function () {
+
+                adminSecondsRemaining--;
+
+                if (
+                    adminSecondsRemaining <= 0
+                ) {
+
+                    /*
+                        End of one round.
+                        Move to the next round and restart.
+                    */
+
+                    adminRoundNumber++;
+
+                    adminSecondsRemaining =
+                        adminRoundSeconds;
+                }
+
+                updateAdminTimerDisplay();
+
+            },
+            1000
+        );
+}
+
+
+function applyAdminSettings() {
+
+    const roundValue =
+        parseInt(
+            document
+                .getElementById("roundInput")
+                .value
+        );
+
+    const timeValue =
+        parseInt(
+            document
+                .getElementById("timeInput")
+                .value
+        );
+
+    const statusValue =
+        document
+            .getElementById("statusInput")
+            .value;
+
+    const capitalValue =
+        parseFloat(
+            document
+                .getElementById("capitalInput")
+                .value
+        );
+
+
+    if (
+        roundValue &&
+        roundValue > 0
+    ) {
+
+        adminRoundNumber =
+            roundValue;
+    }
+
+
+    if (
+        timeValue &&
+        timeValue > 0
+    ) {
+
+        adminRoundSeconds =
+            timeValue;
+
+        adminSecondsRemaining =
+            timeValue;
+    }
+
+
+    if (
+        !Number.isNaN(capitalValue) &&
+        capitalValue >= 0
+    ) {
+
+        document
+            .getElementById("startingCapital")
+            .textContent =
+            "$" +
+            capitalValue.toFixed(2);
+    }
+
+
+    stopAdminTimer();
+
+    document
+        .getElementById("currentRound")
+        .textContent =
+        adminRoundNumber;
+
+    document
+        .getElementById("timeRemaining")
+        .textContent =
+        formatAdminTime(
+            adminSecondsRemaining
+        );
+
+    document
+        .getElementById("gameStatus")
+        .textContent =
+        statusValue;
+
+
+    if (statusValue === "ACTIVE") {
+
+        startAdminTimer();
+    }
+
+
+    document
+        .getElementById("gameMessage")
+        .textContent =
+        "Game settings updated on the frontend.";
+}
+
+
+function resetAdminGame() {
+
+    stopAdminTimer();
+
+    adminRoundNumber = 1;
+
+    adminRoundSeconds =
+        DEFAULT_ROUND_SECONDS;
+
+    adminSecondsRemaining =
+        DEFAULT_ROUND_SECONDS;
+
+
+    document
+        .getElementById("roundInput")
+        .value =
+        1;
+
+    document
+        .getElementById("timeInput")
+        .value =
+        DEFAULT_ROUND_SECONDS;
+
+    document
+        .getElementById("statusInput")
+        .value =
+        "PAUSED";
+
+    document
+        .getElementById("currentRound")
+        .textContent =
+        1;
+
+    document
+        .getElementById("timeRemaining")
+        .textContent =
+        "01:00";
+
+    document
+        .getElementById("gameStatus")
+        .textContent =
+        "PAUSED";
+
+    document
+        .getElementById("gameMessage")
+        .textContent =
+        "Game timer reset.";
+}
+
+
+/* START GAME BUTTON */
+
+document
+    .getElementById("startGameButton")
+    .addEventListener(
+        "click",
+        function () {
+
+            if (
+                adminSecondsRemaining <= 0
+            ) {
+
+                adminSecondsRemaining =
+                    adminRoundSeconds;
+            }
+
+            startAdminTimer();
+
+            document
+                .getElementById("gameMessage")
+                .textContent =
+                "Game timer started.";
+        }
+    );
+
+
+/* UPDATE SETTINGS BUTTON */
+
+document
+    .getElementById("updateGameButton")
+    .addEventListener(
+        "click",
+        applyAdminSettings
+    );
+
+
+/* RESET GAME BUTTON */
+
+document
+    .getElementById("resetGameButton")
+    .addEventListener(
+        "click",
+        resetAdminGame
+    );
+
+
+/* INITIAL FRONTEND VALUES */
+
+document
+    .getElementById("roundInput")
+    .value =
+    adminRoundNumber;
+
+document
+    .getElementById("timeInput")
+    .value =
+    adminRoundSeconds;
+
+document
+    .getElementById("statusInput")
+    .value =
+    "PAUSED";
+
+document
+    .getElementById("currentRound")
+    .textContent =
+    adminRoundNumber;
+
+document
+    .getElementById("timeRemaining")
+    .textContent =
+    "01:00";
+
+document
+    .getElementById("gameStatus")
+    .textContent =
+    "PAUSED";
+
+
 
 async function loadAdminName() {
 
