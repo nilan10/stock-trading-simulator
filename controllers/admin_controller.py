@@ -13,6 +13,7 @@ from services.admin_service import (
     get_all_users,
     update_user_admin,
     get_all_portfolios,
+    get_leaderboard,
     get_all_orders,
     get_completed_trades,
     get_all_audit_logs
@@ -313,6 +314,26 @@ def get_portfolios():
         }
         for portfolio in portfolios
     ]), 200
+
+# ============================================================
+# LEADERBOARD
+# ============================================================
+
+@admin_bp.route("/leaderboard", methods=["GET"])
+def get_leaderboard_controller():
+
+    leaderboard, error = get_leaderboard(
+        get_current_admin_id()
+    )
+
+    if error:
+        return jsonify({
+            "error": error
+        }), 403
+
+    return jsonify(
+        leaderboard
+    ), 200
 
 
 # ============================================================

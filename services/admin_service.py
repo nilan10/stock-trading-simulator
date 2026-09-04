@@ -485,6 +485,91 @@ def get_all_portfolios(admin_user_id):
 
 
 # ============================================================
+# LEADERBOARD
+# ============================================================
+
+def get_leaderboard(admin_user_id):
+    """
+    Return traders ranked from highest to lowest total portfolio value.
+
+    total_portfolio_value =
+        cash balance
+        + current market value of all stock holdings
+    """
+
+    admin = _get_admin(admin_user_id)
+
+    if not admin:
+        return None, "Unauthorized. Only Admins can view the leaderboard."
+
+    traders = (
+        User.query
+        .filter_by(role="Trader")
+        .order_by(User.id)
+        .all()
+    )
+
+    leaderboard = []
+
+    for user in traders:
+
+        holdings = (
+            Portfolio.query
+            .filter_by(user_id=user.id)
+            .all()
+        )
+
+        holdings_value = 0.0
+
+        for holding in holdings:
+
+            stock = db.session.get(
+                Stock,
+                holding.stock_id
+            )
+
+            if not stock:
+                continue
+
+            holdings_value += (
+                float(holding.quantity)
+                * float(stock.current_price)
+            )
+
+        cash_balance = float(
+            user.cash_balance or 0
+        )
+
+        total_portfolio_value = (
+            cash_balance
+            + holdings_value
+        )
+
+        leaderboard.append({
+            "user_id": user.id,
+            "username": user.username,
+            "cash_balance": cash_balance,
+            "holdings_value": holdings_value,
+            "total_portfolio_value": total_portfolio_value
+        })
+
+    leaderboard.sort(
+        key=lambda player: (
+            -player["total_portfolio_value"],
+            player["username"].lower()
+        )
+    )
+
+    for index, player in enumerate(
+        leaderboard,
+        start=1
+    ):
+        player["rank"] = index
+
+    return leaderboard, None
+
+
+# ============================================================
 # ORDER / TRADING ACTIVITY
 # ============================================================
 

@@ -205,8 +205,7 @@
                 ></p>
 
                 <p class="admin-description">
-                    Frontend timer demo for now. This can later connect
-                    to the backend game state so all users share the same timer.
+                    
                 </p>
 
             </div>
@@ -399,7 +398,47 @@
         </div>
 
     </section>
+<!-- =========================================================
+     LEADERBOARD
+========================================================= -->
 
+<section class="admin-card">
+
+    <h2>LEADERBOARD</h2>
+
+    <p class="admin-description">
+        Players ranked by total portfolio value.
+    </p>
+
+    <div class="admin-table-wrapper">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Username</th>
+                    <th>Cash</th>
+                    <th>Holdings Value</th>
+                    <th>Total Portfolio Value</th>
+                </tr>
+            </thead>
+
+            <tbody id="leaderboardTable">
+
+                <tr>
+                    <td colspan="5">
+                        Leaderboard data will appear here.
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
 
 
     <!-- =====================================================
@@ -1021,6 +1060,93 @@ async function loadAdminName() {
 
 
 loadAdminName();
+
+/* =========================================================
+   LEADERBOARD
+========================================================= */
+
+async function loadLeaderboard() {
+
+    const table =
+        document.getElementById(
+            "leaderboardTable"
+        );
+
+    table.innerHTML = `
+        <tr>
+            <td colspan="5">
+                Loading leaderboard...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        const response =
+            await fetch(
+                "/admin/leaderboard"
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Unable to load leaderboard"
+            );
+        }
+
+        const leaderboard =
+            await response.json();
+
+        table.innerHTML = "";
+
+        if (leaderboard.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5">
+                        No traders found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        for (const player of leaderboard) {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+            row.innerHTML = `
+                <td>${player.rank}</td>
+                <td>${player.username}</td>
+                <td>$${player.cash_balance.toFixed(2)}</td>
+                <td>$${player.holdings_value.toFixed(2)}</td>
+                <td>$${player.total_portfolio_value.toFixed(2)}</td>
+            `;
+
+            table.appendChild(row);
+        }
+
+    } catch (error) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    Leaderboard is currently unavailable.
+                </td>
+            </tr>
+        `;
+
+        console.log(
+            "Unable to load leaderboard.",
+            error
+        );
+    }
+}
+
+loadLeaderboard();
 
 </script>
 

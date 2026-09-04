@@ -412,6 +412,30 @@ body {
     font-weight: 700;
 }
 
+/* =========================================================
+   MARKET LEADERBOARD
+========================================================= */
+
+/* Rank column */
+#marketLeaderboardTable td:first-child {
+    font-weight: 800;
+    width: 80px;
+}
+
+/* Username */
+#marketLeaderboardTable td:nth-child(2) {
+    font-weight: 600;
+}
+
+/* Portfolio value */
+#marketLeaderboardTable td:last-child {
+    font-weight: 700;
+}
+
+/* First-place trader */
+#marketLeaderboardTable tr:first-child td {
+    font-weight: 800;
+}
 
 /* FORM LABELS */
 

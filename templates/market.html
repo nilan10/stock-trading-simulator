@@ -216,6 +216,43 @@
 
             </section>
 
+
+            <!-- LEADERBOARD -->
+
+            <section class="dashboard-card">
+
+                <h2>LEADERBOARD</h2>
+
+                <p class="dashboard-description">
+                    See how traders rank by total portfolio value.
+                </p>
+
+                <div class="table-wrapper">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>Username</th>
+                                <th>Portfolio Value</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="marketLeaderboardTable">
+                            <tr>
+                                <td colspan="3" class="table-state">
+                                    Leaderboard data will appear here.
+                                </td>
+                            </tr>
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
         </div>
 
 
@@ -229,10 +266,12 @@
 
             <section class="dashboard-card side-card">
 
-                <h2>QUICK TRADE</h2>
+                <h2>MARKET TRADE</h2>
 
                 <p class="dashboard-description">
                     Buy or sell immediately at the current market price.
+                    <br>
+                    <span class="fee-info">(5% fee for quick trade)</span>
                 </p>
 
 
@@ -288,10 +327,11 @@
 
             <section class="dashboard-card side-card">
 
-                <h2>CREATE ORDER</h2>
+                <h2>CREATE USER ORDER</h2>
 
                 <p class="dashboard-description">
-                    Create a limit order at the price you choose.
+                    (No fee)
+                    
                 </p>
 
 
@@ -1619,6 +1659,102 @@ async function loadHistory() {
 
 
 /* =========================================================
+   LEADERBOARD
+========================================================= */
+
+async function loadLeaderboard() {
+
+    const table =
+        document.getElementById(
+            "marketLeaderboardTable"
+        );
+
+    table.innerHTML = `
+        <tr>
+            <td colspan="3"
+                class="table-state">
+                Loading leaderboard...
+            </td>
+        </tr>
+    `;
+
+    try {
+
+        const response =
+            await fetch(
+                "/leaderboard"
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "Unable to load leaderboard"
+            );
+        }
+
+        const leaderboard =
+            await response.json();
+
+        table.innerHTML = "";
+
+        if (leaderboard.length === 0) {
+
+            table.innerHTML = `
+                <tr>
+                    <td colspan="3"
+                        class="table-state">
+                        No traders found.
+                    </td>
+                </tr>
+            `;
+
+            return;
+        }
+
+        for (const player of leaderboard) {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+            row.innerHTML = `
+                <td>
+                    ${player.rank}
+                </td>
+
+                <td>
+                    ${player.username}
+                </td>
+
+                <td>
+                    $${player.total_portfolio_value.toFixed(2)}
+                </td>
+            `;
+
+            table.appendChild(row);
+        }
+
+    } catch (error) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="3"
+                    class="table-state table-error">
+                    Leaderboard is currently unavailable.
+                </td>
+            </tr>
+        `;
+
+        console.log(
+            "Unable to load leaderboard.",
+            error
+        );
+    }
+}
+
+
+
+/* =========================================================
    1-MINUTE TRADING ROUND TIMER
 ========================================================= */
 
@@ -1755,6 +1891,8 @@ async function refreshDashboard() {
     await loadOrders();
 
     await loadHistory();
+
+    await loadLeaderboard();
 
 }
 
