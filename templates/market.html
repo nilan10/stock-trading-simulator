@@ -2181,39 +2181,35 @@ async function loadLeaderboard() {
 ========================================================= */
 
 /*
-    FRONTEND-ONLY FOR NOW.
+    BACKEND-SYNCHRONIZED TRADING ROUND TIMER.
 
-    Every round lasts 60 seconds.
+    The backend is the source of truth for:
+    - current round
+    - time remaining
+    - game status
 
-    When the timer reaches 00:00:
-    - the round number increases
-    - refreshDashboard() runs
-    - stocks, balance, holdings, orders, and history
-      are requested again from the backend
-    - the timer restarts at 01:00
-
-    This page does NOT calculate new stock prices.
-    It only displays the newest prices returned by the backend.
+    The frontend only displays the game state.
 */
 
-const ROUND_LENGTH_SECONDS = 60;
-
 let currentRoundNumber = 1;
-
-let roundEndTime =
-    Date.now() +
-    ROUND_LENGTH_SECONDS * 1000;
-
-let roundRefreshInProgress = false;
+let gameStatus = "PAUSED";
+let roundEndTime = null;
+let gameStateSyncInProgress = false;
+let lastKnownRound = null;
 
 
 function formatRoundTime(totalSeconds) {
 
-    const minutes =
-        Math.floor(totalSeconds / 60);
+    totalSeconds = Math.max(
+        0,
+        Math.floor(totalSeconds)
+    );
 
-    const seconds =
-        totalSeconds % 60;
+    const minutes = Math.floor(
+        totalSeconds / 60
+    );
+
+    const seconds = totalSeconds % 60;
 
     return (
         String(minutes).padStart(2, "0")
@@ -2223,79 +2219,134 @@ function formatRoundTime(totalSeconds) {
 }
 
 
-function resetRoundTimer() {
+/* =========================================================
+   SYNCHRONIZE WITH BACKEND GAME STATE
+========================================================= */
 
-    roundEndTime =
-        Date.now() +
-        ROUND_LENGTH_SECONDS * 1000;
+async function syncGameState() {
 
-    document
-        .getElementById("roundTimer")
-        .textContent =
-        "01:00";
-}
-
-
-async function finishRound() {
-
-    if (roundRefreshInProgress) {
+    if (gameStateSyncInProgress) {
         return;
     }
 
-    roundRefreshInProgress = true;
+    gameStateSyncInProgress = true;
 
-    document
-        .getElementById("roundTimer")
-        .textContent =
-        "00:00";
+    try {
 
-    currentRoundNumber++;
+        const response = await fetch("/game");
 
-    document
-        .getElementById("roundNumber")
-        .textContent =
-        currentRoundNumber;
+        if (!response.ok) {
+            throw new Error(
+                "Unable to load game state."
+            );
+        }
 
-    await refreshDashboard();
+        const data = await response.json();
 
-    resetRoundTimer();
+        const previousRound = lastKnownRound;
 
-    roundRefreshInProgress = false;
+        currentRoundNumber = data.current_round;
+        gameStatus = data.status;
+
+        document
+            .getElementById("roundNumber")
+            .textContent = currentRoundNumber;
+
+        if (gameStatus === "ACTIVE") {
+
+            roundEndTime =
+                Date.now()
+                + (Number(data.time_remaining) * 1000);
+
+            document
+                .getElementById("roundTimer")
+                .textContent =
+                formatRoundTime(data.time_remaining);
+
+        } else {
+
+            roundEndTime = null;
+
+            document
+                .getElementById("roundTimer")
+                .textContent =
+                formatRoundTime(data.time_remaining);
+        }
+
+        lastKnownRound = currentRoundNumber;
+
+        /*
+            If the backend advanced the round since our
+            previous synchronization, reload market data.
+        */
+        if (
+            previousRound !== null
+            && previousRound !== currentRoundNumber
+        ) {
+
+            await refreshDashboard();
+        }
+
+    } catch (error) {
+
+        console.log(
+            "Unable to synchronize game state.",
+            error
+        );
+
+    } finally {
+
+        gameStateSyncInProgress = false;
+    }
 }
 
 
+/* =========================================================
+   DISPLAY COUNTDOWN
+========================================================= */
+
 function updateRoundTimer() {
+
+    if (
+        gameStatus !== "ACTIVE"
+        || roundEndTime === null
+    ) {
+        return;
+    }
 
     const millisecondsLeft =
         roundEndTime - Date.now();
 
-    const secondsLeft =
-        Math.max(
-            0,
-            Math.ceil(
-                millisecondsLeft / 1000
-            )
-        );
+    const secondsLeft = Math.max(
+        0,
+        Math.ceil(millisecondsLeft / 1000)
+    );
 
     document
         .getElementById("roundTimer")
         .textContent =
-        formatRoundTime(
-            secondsLeft
-        );
-
-    if (
-        secondsLeft <= 0 &&
-        !roundRefreshInProgress
-    ) {
-        finishRound();
-    }
+        formatRoundTime(secondsLeft);
 }
 
 
+/*
+    Smoothly update the visual countdown.
+*/
 setInterval(
     updateRoundTimer,
     250
+);
+
+
+/*
+    Synchronize with the backend every second.
+
+    This means the frontend does not assume that the game
+    is active, paused, or on a particular round.
+*/
+setInterval(
+    syncGameState,
+    1000
 );
 
 
@@ -2323,8 +2374,7 @@ async function refreshDashboard() {
 /* =========================================================
    START PAGE
 ========================================================= */
-resetRoundTimer();
-updateRoundTimer();
+syncGameState();
 
 loadCurrentUser();
 

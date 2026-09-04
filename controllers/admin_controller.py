@@ -136,6 +136,8 @@ def hard_reset_game_controller():
     if not success:
         return jsonify({"error": message}), 400
 
+    session.clear()
+
     return jsonify({
         "message": message
     }), 200

@@ -5,6 +5,7 @@ from models.models import (
     GameState,
     Portfolio,
     Order,
+    StockPriceHistory,
     AuditLog
 )
 
@@ -393,6 +394,7 @@ def delete_stock_admin(admin_user_id, stock_id):
 
     Portfolio.query.filter_by(stock_id=stock_id).delete()
     Order.query.filter_by(stock_id=stock_id).delete()
+    StockPriceHistory.query.filter_by(stock_id=stock_id).delete()
 
     db.session.delete(stock)
     db.session.commit()
