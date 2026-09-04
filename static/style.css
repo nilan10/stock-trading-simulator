@@ -565,6 +565,74 @@ body {
 }
 
 
+/* =========================================================
+   OPEN ORDER ACTION BUTTONS
+========================================================= */
+
+.order-action-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.order-edit-button,
+.order-delete-button {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 7px;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.order-edit-button {
+    background-color: #159447;
+}
+
+.order-edit-button:hover {
+    background-color: #117a3a;
+}
+
+.order-delete-button {
+    background-color: #d20f2a;
+}
+
+.order-delete-button:hover {
+    background-color: #ad0d23;
+}
+
+
+/* EDIT ORDER MODAL INPUTS */
+
+.modal-card label {
+    display: block;
+    margin-top: 14px;
+    margin-bottom: 6px;
+    text-align: left;
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.modal-card input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border: 1px solid #475569;
+    border-radius: 7px;
+    background-color: #141c25;
+    color: white;
+    font-size: 14px;
+}
+
+.modal-card input:focus {
+    outline: none;
+    border-color: #8b1e4f;
+    box-shadow: 0 0 0 2px rgba(139, 30, 79, 0.18);
+}
+
+
 /* CREATE ORDER */
 
 .create-order-button {

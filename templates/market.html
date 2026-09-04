@@ -164,6 +164,7 @@
                         <thead>
 
                         <tr>
+                            <th>Order ID</th>
                             <th>Trader</th>
                             <th>Ticker</th>
                             <th>Type</th>
@@ -488,11 +489,102 @@
 
 
 
+<!-- ==============================================
+     EDIT ORDER POPUP
+================================================ -->
+
+<div id="editOrderModal" class="modal-overlay">
+    <div class="modal-card">
+
+        <h2>
+            EDIT ORDER #<span id="editOrderId">--</span>
+        </h2>
+
+        <p id="editOrderDetails">
+            Update the quantity or price for your open order.
+        </p>
+
+        <label for="editOrderQuantity">Quantity</label>
+        <input
+            id="editOrderQuantity"
+            type="number"
+            min="1"
+            placeholder="Quantity"
+        >
+
+        <label for="editOrderPrice">Price</label>
+        <input
+            id="editOrderPrice"
+            type="number"
+            min="0.01"
+            step="0.01"
+            placeholder="Price"
+        >
+
+        <p id="editOrderMessage" class="dashboard-message"></p>
+
+        <div class="modal-actions">
+            <button
+                id="cancelEditOrderButton"
+                class="modal-cancel-button"
+            >
+                CANCEL
+            </button>
+
+            <button
+                id="saveEditOrderButton"
+                class="order-edit-button"
+            >
+                SAVE CHANGES
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ==============================================
+     DELETE / CANCEL ORDER POPUP
+================================================ -->
+
+<div id="deleteOrderModal" class="modal-overlay">
+    <div class="modal-card">
+
+        <h2>
+            DELETE ORDER #<span id="deleteOrderId">--</span>?
+        </h2>
+
+        <p id="deleteOrderMessage">
+            Are you sure you want to cancel this open order?
+        </p>
+
+        <div class="modal-actions">
+            <button
+                id="keepOrderButton"
+                class="modal-cancel-button"
+            >
+                KEEP ORDER
+            </button>
+
+            <button
+                id="confirmDeleteOrderButton"
+                class="order-delete-button"
+            >
+                DELETE ORDER
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
 <script>
 
 /* =========================================================
    CURRENT USER
 ========================================================= */
+
+let currentUserId = null;
 
 async function loadCurrentUser() {
 
@@ -503,6 +595,9 @@ async function loadCurrentUser() {
 
         const user =
             await response.json();
+
+        currentUserId =
+            user.user_id;
 
 
         if (user.username) {
@@ -1213,28 +1308,24 @@ document
 
 async function loadOrders() {
 
-   
     const table =
         document.getElementById(
             "ordersTable"
         );
 
-
     table.innerHTML = `
         <tr>
-            <td colspan="7"
+            <td colspan="8"
                 class="table-state">
                 Loading open orders...
             </td>
         </tr>
     `;
 
-
     try {
 
         const response =
             await fetch("/orders");
-
 
         if (!response.ok) {
             throw new Error(
@@ -1242,19 +1333,16 @@ async function loadOrders() {
             );
         }
 
-
         const orders =
             await response.json();
 
-
         table.innerHTML = "";
-
 
         if (orders.length === 0) {
 
             table.innerHTML = `
                 <tr>
-                    <td colspan="7"
+                    <td colspan="8"
                         class="table-state">
                         No open player orders.
                     </td>
@@ -1264,7 +1352,6 @@ async function loadOrders() {
             return;
         }
 
-
         for (const order of orders) {
 
             const row =
@@ -1272,14 +1359,14 @@ async function loadOrders() {
                     "tr"
                 );
 
-
             const typeClass =
                 order.order_type === "BUY"
                     ? "positive-value"
                     : "negative-value";
 
-
             row.innerHTML = `
+                <td>#${order.order_id}</td>
+
                 <td>
                     ${order.username}
                 </td>
@@ -1306,16 +1393,92 @@ async function loadOrders() {
                     </span>
                 </td>
 
-                <td>
-                    <button
-                        class="accept-button"
-                        onclick="acceptOrder(${order.order_id})"
-                    >
-                        ACCEPT
-                    </button>
-                </td>
+                <td class="order-action-cell"></td>
             `;
 
+            const actionCell =
+                row.querySelector(
+                    ".order-action-cell"
+                );
+
+            const isMyOrder =
+                Number(order.user_id)
+                ===
+                Number(currentUserId);
+
+            if (isMyOrder) {
+
+                const editButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                editButton.className =
+                    "order-edit-button";
+
+                editButton.textContent =
+                    "EDIT";
+
+                editButton.addEventListener(
+                    "click",
+                    function () {
+                        openEditOrderModal(order);
+                    }
+                );
+
+
+                const deleteButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                deleteButton.className =
+                    "order-delete-button";
+
+                deleteButton.textContent =
+                    "DELETE";
+
+                deleteButton.addEventListener(
+                    "click",
+                    function () {
+                        openDeleteOrderModal(order);
+                    }
+                );
+
+                actionCell.appendChild(
+                    editButton
+                );
+
+                actionCell.appendChild(
+                    deleteButton
+                );
+
+            } else {
+
+                const acceptButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                acceptButton.className =
+                    "accept-button";
+
+                acceptButton.textContent =
+                    "ACCEPT";
+
+                acceptButton.addEventListener(
+                    "click",
+                    function () {
+                        acceptOrder(
+                            order.order_id
+                        );
+                    }
+                );
+
+                actionCell.appendChild(
+                    acceptButton
+                );
+            }
 
             table.appendChild(row);
         }
@@ -1324,13 +1487,12 @@ async function loadOrders() {
 
         table.innerHTML = `
             <tr>
-                <td colspan="7"
+                <td colspan="8"
                     class="table-state table-error">
                     Open orders are currently unavailable.
                 </td>
             </tr>
         `;
-
 
         console.log(
             "Unable to load orders.",
@@ -1338,6 +1500,266 @@ async function loadOrders() {
         );
     }
 }
+
+
+
+/* =========================================================
+   EDIT OWN OPEN ORDER
+========================================================= */
+
+let activeEditOrderId = null;
+
+
+function openEditOrderModal(order) {
+
+    activeEditOrderId =
+        order.order_id;
+
+    document
+        .getElementById("editOrderId")
+        .textContent =
+        order.order_id;
+
+    document
+        .getElementById("editOrderDetails")
+        .textContent =
+        `${order.order_type} ${order.ticker} — update quantity or price.`;
+
+    document
+        .getElementById("editOrderQuantity")
+        .value =
+        order.quantity;
+
+    document
+        .getElementById("editOrderPrice")
+        .value =
+        order.price;
+
+    document
+        .getElementById("editOrderMessage")
+        .textContent =
+        "";
+
+    document
+        .getElementById("editOrderModal")
+        .classList.add("show");
+}
+
+
+function closeEditOrderModal() {
+
+    activeEditOrderId = null;
+
+    document
+        .getElementById("editOrderModal")
+        .classList.remove("show");
+}
+
+
+document
+    .getElementById("cancelEditOrderButton")
+    .addEventListener(
+        "click",
+        closeEditOrderModal
+    );
+
+
+document
+    .getElementById("saveEditOrderButton")
+    .addEventListener(
+        "click",
+        async function () {
+
+            if (!activeEditOrderId) {
+                return;
+            }
+
+            const quantity =
+                parseInt(
+                    document
+                        .getElementById(
+                            "editOrderQuantity"
+                        )
+                        .value
+                );
+
+            const price =
+                parseFloat(
+                    document
+                        .getElementById(
+                            "editOrderPrice"
+                        )
+                        .value
+                );
+
+            const message =
+                document
+                    .getElementById(
+                        "editOrderMessage"
+                    );
+
+            if (
+                !quantity ||
+                quantity <= 0 ||
+                !price ||
+                price <= 0
+            ) {
+
+                message.textContent =
+                    "Enter a valid quantity and price.";
+
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/orders/${activeEditOrderId}`,
+                        {
+                            method: "PUT",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    quantity:
+                                        quantity,
+                                    price:
+                                        price
+                                })
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    message.textContent =
+                        data.error;
+
+                    return;
+                }
+
+                closeEditOrderModal();
+
+                await refreshDashboard();
+
+            } catch (error) {
+
+                message.textContent =
+                    "Order could not be updated.";
+
+                console.log(
+                    "Unable to update order.",
+                    error
+                );
+            }
+        }
+    );
+
+
+
+/* =========================================================
+   DELETE / CANCEL OWN OPEN ORDER
+========================================================= */
+
+let activeDeleteOrderId = null;
+
+
+function openDeleteOrderModal(order) {
+
+    activeDeleteOrderId =
+        order.order_id;
+
+    document
+        .getElementById("deleteOrderId")
+        .textContent =
+        order.order_id;
+
+    document
+        .getElementById("deleteOrderMessage")
+        .textContent =
+        `Cancel ${order.order_type} order #${order.order_id} for `
+        + `${order.quantity} share(s) of ${order.ticker} at `
+        + `$${order.price.toFixed(2)}?`;
+
+    document
+        .getElementById("deleteOrderModal")
+        .classList.add("show");
+}
+
+
+function closeDeleteOrderModal() {
+
+    activeDeleteOrderId = null;
+
+    document
+        .getElementById("deleteOrderModal")
+        .classList.remove("show");
+}
+
+
+document
+    .getElementById("keepOrderButton")
+    .addEventListener(
+        "click",
+        closeDeleteOrderModal
+    );
+
+
+document
+    .getElementById("confirmDeleteOrderButton")
+    .addEventListener(
+        "click",
+        async function () {
+
+            if (!activeDeleteOrderId) {
+                return;
+            }
+
+            try {
+
+                const response =
+                    await fetch(
+                        `/orders/${activeDeleteOrderId}`,
+                        {
+                            method: "DELETE"
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (!response.ok) {
+
+                    alert(data.error);
+
+                    return;
+                }
+
+                closeDeleteOrderModal();
+
+                await refreshDashboard();
+
+            } catch (error) {
+
+                alert(
+                    "Order could not be deleted."
+                );
+
+                console.log(
+                    "Unable to delete order.",
+                    error
+                );
+            }
+        }
+    );
+
 
 
 /* =========================================================
