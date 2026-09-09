@@ -247,7 +247,7 @@ def update_stock_prices():
         percentage_change = Decimal(
             str(
                 random.uniform(
-                    float(-volatility),
+                    float(-volatility * Decimal("0.90")),
                     float(volatility)
                 )
             )

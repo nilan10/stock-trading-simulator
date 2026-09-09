@@ -402,6 +402,7 @@
 
             </table>
 
+
         </div>
 
     </section>
@@ -497,6 +498,14 @@
                     </tbody>
 
                 </table>
+
+            <button
+                id="adminPortfolioToggleButton"
+                class="admin-secondary-button"
+                style="display: none;"
+            >
+                SHOW ALL
+            </button>
 
             </div>
 
@@ -599,6 +608,14 @@
 
             </table>
 
+            <button
+                id="adminTradeToggleButton"
+                class="admin-secondary-button"
+                style="display: none;"
+            >
+                SHOW ALL
+            </button>
+
 
         </div>
 
@@ -686,6 +703,10 @@ let adminAuditExpanded = false;
 let adminGameSyncInProgress = false;
 let adminOrdersData = [];
 let adminOrdersExpanded = false;
+let adminTradesData = [];
+let adminTradesExpanded = false;
+let adminPortfoliosData = [];
+let adminPortfoliosExpanded = false;
 
 
 /* =========================================================
@@ -1933,38 +1954,77 @@ async function loadAdminUsers() {
 
 async function loadAdminPortfolios() {
     const table = document.getElementById("adminPortfolioTable");
-    table.innerHTML = '<tr><td colspan="4">Loading portfolios...</td></tr>';
+    const toggleButton =
+        document.getElementById("adminPortfolioToggleButton");
+
+    table.innerHTML =
+        '<tr><td colspan="4">Loading portfolios...</td></tr>';
 
     try {
         const response = await fetch("/admin/portfolios");
         const portfolios = await response.json();
 
         if (!response.ok) {
-            throw new Error(portfolios.error || "Unable to load portfolios.");
+            throw new Error(
+                portfolios.error || "Unable to load portfolios."
+            );
         }
-
-        table.innerHTML = "";
 
         if (!portfolios || portfolios.length === 0) {
             table.innerHTML =
                 '<tr><td colspan="4">No portfolio holdings found.</td></tr>';
+
+            toggleButton.style.display = "none";
             return;
         }
 
-        portfolios.forEach(portfolio => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td>${portfolio.user_id}</td>
-                <td>${portfolio.stock_id}</td>
-                <td>${portfolio.quantity}</td>
-                <td>$${Number(portfolio.avg_buy_price).toFixed(2)}</td>
-            `;
-            table.appendChild(row);
-        });
+        adminPortfoliosData = portfolios;
+        adminPortfoliosExpanded = false;
+
+        renderAdminPortfolios();
+
     } catch (error) {
         console.error("Unable to load portfolios:", error);
+
         table.innerHTML =
             '<tr><td colspan="4">Portfolio data is currently unavailable.</td></tr>';
+
+        toggleButton.style.display = "none";
+    }
+}
+
+
+function renderAdminPortfolios() {
+    const table = document.getElementById("adminPortfolioTable");
+    const toggleButton =
+        document.getElementById("adminPortfolioToggleButton");
+
+    table.innerHTML = "";
+
+    const displayedPortfolios = adminPortfoliosExpanded
+        ? adminPortfoliosData
+        : adminPortfoliosData.slice(0, 10);
+
+    displayedPortfolios.forEach(portfolio => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${portfolio.user_id}</td>
+            <td>${portfolio.stock_id}</td>
+            <td>${portfolio.quantity}</td>
+            <td>$${Number(portfolio.avg_buy_price).toFixed(2)}</td>
+        `;
+
+        table.appendChild(row);
+    });
+
+    if (adminPortfoliosData.length > 10) {
+        toggleButton.style.display = "inline-block";
+
+        toggleButton.textContent =
+            adminPortfoliosExpanded ? "SHOW LESS" : "SHOW ALL";
+    } else {
+        toggleButton.style.display = "none";
     }
 }
 
@@ -2048,46 +2108,100 @@ function renderAdminOrders() {
 
 async function loadAdminTrades() {
     const table = document.getElementById("adminTradeTable");
-    table.innerHTML = '<tr><td colspan="7">Loading completed trades...</td></tr>';
+    const toggleButton = document.getElementById("adminTradeToggleButton");
+
+    table.innerHTML =
+        '<tr><td colspan="7">Loading completed trades...</td></tr>';
 
     try {
         const response = await fetch("/admin/trades");
         const trades = await response.json();
 
         if (!response.ok) {
-            throw new Error(trades.error || "Unable to load completed trades.");
+            throw new Error(
+                trades.error || "Unable to load completed trades."
+            );
         }
-
-        table.innerHTML = "";
 
         if (!trades || trades.length === 0) {
             table.innerHTML =
                 '<tr><td colspan="7">No completed trades found.</td></tr>';
+
+            toggleButton.style.display = "none";
             return;
         }
 
-        trades.forEach(trade => {
-            const row = document.createElement("tr");
-            const tradeDate = trade.created_at
-                ? new Date(trade.created_at).toLocaleString()
-                : "—";
+        const sortedTrades = [...trades].sort((a, b) => {
+            const timeA = a.created_at
+                ? new Date(a.created_at).getTime()
+                : 0;
 
-            row.innerHTML = `
-                <td>${trade.id}</td>
-                <td>${trade.user_id}</td>
-                <td>${trade.stock_id}</td>
-                <td>${trade.quantity}</td>
-                <td>$${Number(trade.price).toFixed(2)}</td>
-                <td>${trade.status}</td>
-                <td>${tradeDate}</td>
-            `;
+            const timeB = b.created_at
+                ? new Date(b.created_at).getTime()
+                : 0;
 
-            table.appendChild(row);
+            if (timeB !== timeA) {
+                return timeB - timeA;
+            }
+
+            return Number(b.id) - Number(a.id);
         });
+
+        adminTradesData = sortedTrades;
+        adminTradesExpanded = false;
+
+        renderAdminTrades();
+
     } catch (error) {
-        console.error("Unable to load completed trades:", error);
+        console.error(
+            "Unable to load completed trades:",
+            error
+        );
+
         table.innerHTML =
             '<tr><td colspan="7">Completed trade data is currently unavailable.</td></tr>';
+
+        toggleButton.style.display = "none";
+    }
+}
+
+
+function renderAdminTrades() {
+    const table = document.getElementById("adminTradeTable");
+    const toggleButton = document.getElementById("adminTradeToggleButton");
+
+    table.innerHTML = "";
+
+    const displayedTrades = adminTradesExpanded
+        ? adminTradesData
+        : adminTradesData.slice(0, 10);
+
+    displayedTrades.forEach(trade => {
+        const row = document.createElement("tr");
+
+        const tradeDate = trade.created_at
+            ? new Date(trade.created_at).toLocaleString()
+            : "—";
+
+        row.innerHTML = `
+            <td>${trade.id}</td>
+            <td>${trade.user_id}</td>
+            <td>${trade.stock_id}</td>
+            <td>${trade.quantity}</td>
+            <td>$${Number(trade.price).toFixed(2)}</td>
+            <td>${trade.status}</td>
+            <td>${tradeDate}</td>
+        `;
+
+        table.appendChild(row);
+    });
+
+    if (adminTradesData.length > 10) {
+        toggleButton.style.display = "inline-block";
+        toggleButton.textContent =
+            adminTradesExpanded ? "SHOW LESS" : "SHOW ALL";
+    } else {
+        toggleButton.style.display = "none";
     }
 }
 
@@ -2277,6 +2391,16 @@ document.getElementById("adminOrderToggleButton").addEventListener("click", () =
 document.getElementById("adminAuditToggleButton").addEventListener("click", () => {
     adminAuditExpanded = !adminAuditExpanded;
     renderAdminAuditLogs();
+});
+
+document.getElementById("adminTradeToggleButton").addEventListener("click", () => {
+    adminTradesExpanded = !adminTradesExpanded;
+    renderAdminTrades();
+});
+
+document.getElementById("adminPortfolioToggleButton").addEventListener("click", () => {
+    adminPortfoliosExpanded = !adminPortfoliosExpanded;
+    renderAdminPortfolios();
 });
 
 loadAdminUsers();
