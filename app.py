@@ -15,9 +15,12 @@ from controllers.order_controller import order_controller
 from controllers.portfolio_controller import portfolio_controller
 from services.game_service import run_game_timer
 from controllers.game_controller import game_controller
+from prometheus_flask_exporter import PrometheusMetrics
 
 
 app = Flask(__name__)
+
+metrics = PrometheusMetrics(app)
 
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 

@@ -3,3 +3,4 @@ mysql-connector-python
 Flask-SQLAlchemy
 pytest
 python-dotenv
+prometheus-flask-exporter
